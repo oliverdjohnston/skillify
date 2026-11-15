@@ -153,3 +153,17 @@ def test_window_fetches_dates_only_when_needed(monkeypatch):
     assert fetched == []
     list(ytdlp.window(undated, None, "2026-01-01"))
     assert fetched == ["s1"]
+
+
+def test_clean_subtitles_sorts_tiktok_cues_by_time():
+    vtt = (
+        "WEBVTT\n\n"
+        "00:00:58.360 --> 00:00:59.453\nAnd he was greenlit\n\n"
+        "00:00:03.288 --> 00:00:06.599\nI wanna share a story\n\n"
+        "00:02.680 --> 00:03.288\nPart one\n\n"  # hours are optional in VTT
+        "01:00:00.000 --> 01:00:01.000\nan hour in\n"
+    )
+    assert (
+        ytdlp.clean_subtitles(vtt)
+        == "Part one I wanna share a story And he was greenlit an hour in"
+    )

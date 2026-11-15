@@ -140,18 +140,34 @@ def pick_track(subtitles: dict, automatic: dict, lang: str) -> tuple[str, dict] 
 _TAG = re.compile(r"<[^>]+>")
 _NOISE = re.compile(r"\[[^\]]*\]|♪")
 _HEADERS = ("WEBVTT", "Kind:", "Language:", "NOTE", "STYLE")
+_TIMING = re.compile(r"^(?:(\d+):)?(\d{1,2}):(\d{2})[.,](\d{3})\s*-->")
 
 
 def clean_subtitles(raw: str) -> str:
-    """Turn VTT/SRT into plain text, dropping timings, tags and YouTube's rolling repeats."""
-    kept: list[str] = []
+    """Turn VTT/SRT into plain text, dropping timings, tags and YouTube's rolling repeats.
+
+    Cues are sorted by start time: TikTok's caption files list them out of order.
+    """
+    cues: list[tuple[float, int, list[str]]] = []  # (start seconds, file order, lines)
     for line in raw.splitlines():
         line = line.strip()
+        timing = _TIMING.match(line)
+        if timing:
+            h, m, sec, ms = (int(g or 0) for g in timing.groups())
+            cues.append((h * 3600 + m * 60 + sec + ms / 1000, len(cues), []))
+            continue
         if not line or line.isdigit() or "-->" in line or line.startswith(_HEADERS):
             continue
-        line = " ".join(_NOISE.sub(" ", html.unescape(_TAG.sub("", line))).split())
-        if line and line not in kept[-2:]:
-            kept.append(line)
+        text = " ".join(_NOISE.sub(" ", html.unescape(_TAG.sub("", line))).split())
+        if text:
+            if not cues:
+                cues.append((0.0, 0, []))  # text before any timing line
+            cues[-1][2].append(text)
+    kept: list[str] = []
+    for _, _, lines in sorted(cues):
+        for text in lines:
+            if text not in kept[-2:]:
+                kept.append(text)
     return " ".join(kept)
 
 

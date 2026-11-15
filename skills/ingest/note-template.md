@@ -15,7 +15,7 @@ Write `creators/<slug>/notes/<key>.md` in exactly this shape:
 ```markdown
 ---
 key: <key>
-content_type: <tutorial | opinion | story | review | promo>
+content_type: <tutorial | opinion | story | review | promo | none>
 sponsored: <false | true  # "<the verbatim sponsor mention>">
 topics: [<1-4 kebab-case tags>]
 ---
@@ -48,7 +48,12 @@ topics: [<1-4 kebab-case tags>]
 
 Field rules:
 - **content_type**: `promo` when the video mainly sells something (their course, merch, an app
-  launch). `review` covers a product review. Otherwise pick the closest of the rest.
+  launch). `review` covers a product review. `none` when nobody actually speaks to the viewer:
+  the transcript is only song lyrics, background music, noise, or one phrase repeated.
+  Otherwise pick the closest of the rest.
+- **Never skip a video.** For `none`, write only the frontmatter with `topics: []` and
+  `## Claims` followed by `- none: <what the audio is, e.g. song lyrics>`. Without a note, the
+  video is queued again forever.
 - **sponsored**: `true` only when the transcript or description explicitly says so (a sponsor
   read, "paid partnership", `#ad`, an affiliate code). Put that mention after the value as a
   comment. Reviewing a product, or a brand sending it, is not sponsorship. Leave the sponsor

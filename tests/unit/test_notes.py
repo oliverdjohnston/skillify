@@ -114,3 +114,10 @@ def test_check_skill_reports_problems(base, tmp_path):
     assert any("match the folder" in p for p in problems)
     assert any("lines" in p for p in problems)
     assert "SKILL.md cites unknown video youtube_nope" in problems
+
+
+def test_none_notes_are_complete_but_add_no_topics(base):
+    add_note(base, "tiktok_a", ["background-music"], content_type="none")
+    assert "tiktok_a" not in sum(notes.todo(base)["batches"], [])
+    assert notes.topics(base) == []
+    assert notes.stats(base)["no_content"] == 1

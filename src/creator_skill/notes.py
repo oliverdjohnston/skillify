@@ -71,8 +71,8 @@ def topics(base: Path) -> list[dict]:
     rows: dict[str, dict] = {}
     for key, note in _notes(base).items():
         entry = index.get(key)
-        if not entry:
-            continue  # note for a video that is no longer canonical
+        if not entry or note.get("content_type") == "none":
+            continue  # no longer canonical, or nothing was said
         for tag in note["topics"]:
             row = rows.setdefault(tag, {"tag": tag, "videos": 0, "promo": 0, "views": 0})
             row["videos"] += 1
@@ -145,6 +145,7 @@ def stats(base: Path) -> dict:
         "cross_posts_merged": len(spoken) - len(index),
         "too_short_for_notes": sum(e["words"] < MIN_WORDS for e in index),
         "notes": sum(n["_complete"] for n in notes.values()),
+        "no_content": sum(n.get("content_type") == "none" for n in notes.values()),
         "promo": sum(n["promo"] for n in notes.values()),
         "sponsored": sum(n["sponsored"] for n in notes.values()),
         "date_range": [dates[0], dates[-1]] if dates else None,
