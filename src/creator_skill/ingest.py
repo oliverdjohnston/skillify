@@ -129,8 +129,11 @@ def ingest(
         except ytdlp.Blocked as e:  # still process what was listed
             blocked = e
         with lock:  # TikTok's listing sometimes ends early without an error
-            previous = state.setdefault("listed", {}).get(name, 0)
-            state["listed"][name] = max(previous, len(listed))
+            seen = (
+                f"{name} {handle}"  # keyed by handle: a different handle or tab lists differently
+            )
+            previous = state.setdefault("listed", {}).get(seen, 0)
+            state["listed"][seen] = max(previous, len(listed))
         if not limit and not since and len(listed) < 0.9 * previous:
             print(
                 f"  WARNING: {name} listed {len(listed)} videos, {previous} last time. "
