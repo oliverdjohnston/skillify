@@ -32,7 +32,7 @@ content):
 ```
 profile.json            {"name", "lang", "tiktok", "youtube", "instagram"}
 instagram_urls.txt      Reel URLs (yt-dlp can't list Instagram profiles)
-state.json              failures only; a video is skipped after 3 tries
+state.json              failures (a video is skipped after 3 tries) and listing counts per handle
 transcripts/<platform>_<id>.md   JSON-valued frontmatter + text; the file existing = done
 index.jsonl             one line per unique video (cross-posts merged), rebuilt from transcripts
 notes/<key>.md          agent-written, see skills/ingest/note-template.md
@@ -85,10 +85,15 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 - **All yt-dlp calls go through `ytdlp._blocking()`**, which turns rate limits and bot checks into
   `Blocked`. Providers use `ytdlp.DownloadError`, never `yt_dlp` directly.
 - **Resume by file existence**, with atomic writes. Never add a database.
-- **4 videos at once by default** (`--workers`). Each worker has its own yt-dlp client (not
-  thread-safe) and keeps the polite pause; Whisper runs one job at a time behind a lock.
+- **Platforms run in parallel, 4 videos at once each by default** (`--workers`). Each worker has
+  its own yt-dlp client (not thread-safe) and keeps its platform's polite pause (`DELAY`);
+  Whisper runs one job at a time behind a lock.
+- **Each platform is listed in full before any video is processed**: a paused listing lets
+  TikTok's cursor expire. TikTok listings still sometimes end early, so `state.json` remembers
+  the biggest count per handle and ingest warns when a listing comes back under 90% of it.
 - `--limit N` is per platform (per tab on YouTube). `--since` stops after 5 old videos in a row,
-  because pinned posts are old.
+  because pinned posts are old. `--most-viewed N` sorts the full listing by views (the listing
+  already has them) and keeps the top N per platform.
 
 ## Working here
 
