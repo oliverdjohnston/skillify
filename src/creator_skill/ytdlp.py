@@ -22,6 +22,7 @@ BLOCK_MARKERS = (
     "sign in to confirm",
     "login required",
     "rate-limit reached",
+    "has been rate-limited",  # YouTube: "The current session has been rate-limited"
     "ip address is blocked",
     "keeps sending the same page",
 )

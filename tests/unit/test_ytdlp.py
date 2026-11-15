@@ -106,6 +106,13 @@ def test_rate_limit_becomes_blocked(fake_ydl):
         list(ytdlp.list_entries("https://list", "tiktok"))
 
 
+def test_youtube_session_rate_limit_becomes_blocked(fake_ydl):
+    error = "ERROR: [youtube] x: The current session has been rate-limited by YouTube"
+    fake_ydl({"https://list": ytdlp.DownloadError(error)})
+    with pytest.raises(ytdlp.Blocked):
+        list(ytdlp.list_entries("https://list", "youtube"))
+
+
 def test_other_errors_pass_through(fake_ydl):
     fake_ydl({"https://list": ytdlp.DownloadError("ERROR: Video unavailable")})
     with pytest.raises(ytdlp.DownloadError):
