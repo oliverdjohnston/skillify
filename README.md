@@ -106,6 +106,9 @@ One-off videos: `creator-skill transcribe <url> [<url> ...]`.
 }
 ```
 
+For YouTube, a handle covers Shorts and long-form. Use the tab URL
+(`https://www.youtube.com/@ana/videos`) to skip Shorts, which are often copies of the TikToks.
+
 Instagram Reels can't be listed automatically right now (yt-dlp's profile support is broken).
 Paste Reel URLs, one per line, into `creators/<slug>/instagram_urls.txt`.
 

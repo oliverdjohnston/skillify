@@ -33,13 +33,18 @@ def test_tiktok_profile_url(listed, handle, tmp_path):
     assert listed == ["https://www.tiktok.com/@creator"]
 
 
-def test_youtube_lists_both_tabs_and_tolerates_a_missing_one(listed, tmp_path):
-    videos = list(youtube.list_videos("https://www.youtube.com/@creator/videos", 5, None, tmp_path))
+def test_youtube_handle_lists_both_tabs_and_tolerates_a_missing_one(listed, tmp_path):
+    videos = list(youtube.list_videos("@creator", 5, None, tmp_path))
     assert listed == [
         "https://www.youtube.com/@creator/shorts",
         "https://www.youtube.com/@creator/videos",
     ]
     assert [v.id for v in videos] == ["videos"]
+
+
+def test_youtube_tab_url_lists_only_that_tab(listed, tmp_path):
+    list(youtube.list_videos("https://www.youtube.com/@creator/videos", None, None, tmp_path))
+    assert listed == ["https://www.youtube.com/@creator/videos"]
 
 
 def test_instagram_reads_url_list(tmp_path):

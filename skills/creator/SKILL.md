@@ -31,6 +31,9 @@ for what is genuinely missing:
 - **slug**: the first handle, lowercase, with anything other than letters or digits turned into
   hyphens (`@Ana.Makes` → `ana-makes`). Reuse an existing slug if this creator is already set up.
 - **name**: the quoted text, else the handle without `@`.
+- **YouTube tabs**: a handle covers Shorts and long-form. A tab URL (`.../@ana/videos`) covers just
+  that tab. Shorts are often copies of the creator's TikToks, so `/videos` saves time if they post
+  on both.
 - **lang**: `en`, unless the user says otherwise or the creator obviously speaks another
   language. It picks the right captions, and Whisper output in other languages is discarded.
 
