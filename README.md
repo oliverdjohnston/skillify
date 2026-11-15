@@ -42,13 +42,6 @@ uv venv -p 3.12 .venv && uv pip install -p .venv -e ".[dev,mac]"
 
 No uv? Use `python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"` (Python 3.11 or newer).
 
-### Supported systems
-
-| System | Whisper backend | Notes |
-|---|---|---|
-| macOS on Apple Silicon | mlx-whisper | Fastest. Needs the `mac` extra and ffmpeg (`brew install ffmpeg`); without ffmpeg it falls back to faster-whisper |
-| macOS on Intel, Linux | faster-whisper | Runs on the CPU |
-
 ## Make a skill from a TikTok account
 
 In your agent (in Claude Code, skills are slash commands):
