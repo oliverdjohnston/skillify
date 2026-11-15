@@ -150,3 +150,22 @@ def test_block_inside_a_worker_stops_the_platform(creators, monkeypatch, capsys)
     counts = ingest.ingest("ana", workers=1)
     assert counts["blocked"] == 1 and counts["failed"] == 0
     assert "refusing requests" in capsys.readouterr().out
+
+
+def test_listing_finishes_before_any_video_is_processed(creators, monkeypatch):
+    calls = fake_provider(monkeypatch, vids("1", "2", "3"))
+    listed = {"done": False}
+    inner = ingest.PROVIDERS["tiktok"].list_videos
+
+    def list_videos(*args):
+        yield from inner(*args)
+        listed["done"] = True
+
+    def download_audio(video, workdir):
+        assert listed["done"], "processing started before the listing finished"
+        calls["audio"] += 1
+        return workdir / "a.m4a"
+
+    ingest.PROVIDERS["tiktok"].list_videos = list_videos
+    ingest.PROVIDERS["tiktok"].download_audio = download_audio
+    assert ingest.ingest("ana")["whisper"] == 3

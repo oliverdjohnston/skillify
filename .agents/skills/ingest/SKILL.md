@@ -36,7 +36,8 @@ else that has a default.
 .venv/bin/creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
 ```
 
-- It handles 4 videos at once, with a polite pause after each: roughly 1,000 captioned videos
+- It first lists the whole profile (a few minutes for a 2,000-video account), then handles 4
+  videos at once with a polite pause after each: roughly 1,000 captioned videos
   an hour, slower when Whisper has to transcribe. For more than about 50 videos, run it in the
   background or ask the user to run it in their own terminal. If it's interrupted, rerun the
   same command.

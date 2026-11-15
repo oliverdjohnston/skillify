@@ -109,6 +109,7 @@ def ingest(
     state = json.loads(state_path.read_text()) if state_path.exists() else {"failed": {}}
     done = {p.stem for p in out_dir.glob("*.md")}
     counts: Counter = Counter()
+    progress = [0, 0]  # videos finished, videos to process on the current platform
 
     def collect(running: dict[Future, Video], futures: Iterable[Future]) -> None:
         for future in futures:
@@ -119,11 +120,17 @@ def ingest(
                 raise
             except Exception as e:
                 tries = state["failed"].get(video.key, {}).get("tries", 0) + 1
-                print(f"  FAILED {video.key}: {e}")
+                progress[0] += 1
+                print(f"  [{progress[0]}/{progress[1]}] FAILED {video.key}: {e}", flush=True)
                 state["failed"][video.key] = {"error": str(e)[:300], "tries": tries}
                 counts["failed"] += 1
             else:
-                print(f"  {video.key}  {result['source']}  {result['words']} words", flush=True)
+                progress[0] += 1
+                print(
+                    f"  [{progress[0]}/{progress[1]}] {video.key}  {result['source']}  "
+                    f"{result['words']} words",
+                    flush=True,
+                )
                 counts[result["source"]] += 1
                 done.add(video.key)
                 state["failed"].pop(video.key, None)
@@ -136,25 +143,39 @@ def ingest(
             continue
         print(f"== {name} {handle}")
         try:
+            # List everything before processing: pausing mid-listing let TikTok's page cursor go
+            # stale, which silently ended the listing after ~600 of 2,300 videos.
+            todo = []
+            listed: list[Video] = []
+            listing_blocked = None
+            try:
+                for video in provider.list_videos(handle, limit, since, base):
+                    listed.append(video)
+            except ytdlp.Blocked as e:  # still process what was listed before the block
+                listing_blocked = e
+            for video in listed:
+                if video.key in done:
+                    counts["already done"] += 1
+                elif state["failed"].get(video.key, {}).get("tries", 0) >= MAX_TRIES:
+                    counts["gave up"] += 1
+                elif dry_run:
+                    print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
+                    counts["listed"] += 1
+                else:
+                    todo.append(video)
+            progress[:] = [0, len(todo)]
+            print(f"  {len(todo)} to process ({counts['already done']} already done)", flush=True)
             with ThreadPoolExecutor(max(1, workers)) as pool:
                 running: dict[Future, Video] = {}
                 try:
-                    for video in provider.list_videos(handle, limit, since, base):
-                        if video.key in done:
-                            counts["already done"] += 1
-                            continue
-                        if state["failed"].get(video.key, {}).get("tries", 0) >= MAX_TRIES:
-                            counts["gave up"] += 1
-                            continue
-                        if dry_run:
-                            print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
-                            counts["listed"] += 1
-                            continue
+                    for video in todo:
                         running[pool.submit(_job, provider, video, out_dir, lang, model)] = video
                         if len(running) >= workers:
                             collect(running, wait(running, return_when=FIRST_COMPLETED).done)
-                finally:  # record work already in flight, even when listing is blocked
+                finally:  # record work already in flight, even when a worker is blocked
                     collect(running, list(running))
+            if listing_blocked:
+                raise listing_blocked
         except ytdlp.Blocked as e:
             counts["blocked"] += 1
             print(
