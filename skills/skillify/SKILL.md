@@ -8,7 +8,8 @@ description: Turn a creator's whole ingested output into one agent skill built f
 Input: a creator slug, optionally with `--enrich`. The result is a standard Agent Skill folder
 (SKILL.md plus references/) that works in any agent that reads skills.
 
-**Stay faithful.** Everything in the skill comes from the creator's notes and transcripts. Don't
+**Stay faithful.** Everything in the skill comes from the creator's notes and transcripts, never
+from `## Guest` sections (guests' views aren't the creator's). Don't
 add generic advice, fill gaps with best practice, or "improve" their methods. Web research
 happens only with `--enrich`, and its results go in separately labelled sections.
 

@@ -15,7 +15,7 @@ Write `creators/<slug>/notes/<key>.md` in exactly this shape:
 ```markdown
 ---
 key: <key>
-content_type: <tutorial | opinion | story | review | promo | none>
+content_type: <tutorial | opinion | story | review | interview | promo | none>
 sponsored: <false | true  # "<the verbatim sponsor mention>">
 topics: [<1-4 kebab-case tags>]
 ---
@@ -38,6 +38,9 @@ topics: [<1-4 kebab-case tags>]
 ## Tools
 - <product, app or resource they name> — <what they say about it>
 
+## Guest
+- <guest name>: <their main point> (interviews only; never in Claims)
+
 ## Voice
 - hook: "<their opening line, verbatim>"
 - structure: <the beats of the video, e.g. hook → problem → 3 tips → CTA>
@@ -51,6 +54,9 @@ Field rules:
   launch). `review` covers a product review. `none` when nobody actually speaks to the viewer:
   the transcript is only song lyrics, background music, noise, or one phrase repeated.
   Otherwise pick the closest of the rest.
+- **interview**: a podcast or conversation with a guest. Transcripts have no speaker labels, so
+  work out who is talking from context. Only the creator's own words go in Claims, Frameworks and
+  Voice; the guest's points go under `## Guest`. If you can't tell who said something, leave it out.
 - **Never skip a video**: a video without a note is queued again forever. For `none`, write only
   the frontmatter with `topics: []` and `## Claims` with `- none: <what the audio is>`.
 - **sponsored**: `true` only when the transcript or description explicitly says so (a sponsor
