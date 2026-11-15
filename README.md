@@ -8,24 +8,6 @@ It works with any agent that reads [Agent Skills](https://agentskills.io) (`SKIL
 Claude Code and Codex. You don't need an API key. Transcription runs on your machine and your
 agent does the reading and writing.
 
-## What a real run looks like
-
-One creator's whole TikTok and YouTube output, four years of videos (November 2022 to November
-2026):
-
-| | |
-|---|---|
-| Videos transcribed | 4,449 (2,348 TikTok, 2,101 YouTube) |
-| Transcribed from platform captions | 4,131 (93%); the other 318 went through local Whisper |
-| Cross-posts merged | 1,014, leaving 3,285 unique videos |
-| Words of transcript | about 5.7 million |
-| Videos with notes | 2,178 (the rest were too short, had no speech or weren't noted yet) |
-| Quotes in the notes found word for word in the transcript | 12,482 of 12,688 (98%) |
-| Promo videos flagged and down-weighted | 89, plus 3 marked as sponsored |
-
-The finished skill is a 1,600-word `SKILL.md`, 11 topic files, a voice guide and a source list
-with a link to every video it cites. `creator-skill check` passed it.
-
 ## How it works
 
 1. **Ingest** downloads each video's metadata and transcript. It uses the platform's own
@@ -66,10 +48,6 @@ No uv? Use `python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"` (Python 
 |---|---|---|
 | macOS on Apple Silicon | mlx-whisper | Fastest. Needs the `mac` extra and ffmpeg (`brew install ffmpeg`); without ffmpeg it falls back to faster-whisper |
 | macOS on Intel, Linux | faster-whisper | Runs on the CPU |
-| Windows | faster-whisper | Should work, but hasn't been tested |
-
-The `mac` extra is safe to keep on other systems: it only installs anything on Apple Silicon.
-Whisper is only used for videos without captions, which in the run above was 7% of them.
 
 ## Make a skill from a TikTok account
 
