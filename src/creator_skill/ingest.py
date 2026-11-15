@@ -9,6 +9,8 @@ import re
 import tempfile
 import time
 from collections import Counter
+from collections.abc import Iterable
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from pathlib import Path
 from types import ModuleType
 
@@ -18,6 +20,8 @@ from .providers import PROVIDERS, for_url
 
 CREATORS_DIR = Path("creators")
 MAX_TRIES = 3
+# shortcut: a fixed 4 parallel videos was fine on TikTok in testing; lower it if platforms block
+DEFAULT_WORKERS = 4
 
 
 def creator_dir(slug: str) -> Path:
@@ -76,6 +80,13 @@ def process_video(provider: ModuleType, video: Video, out_dir: Path, lang: str, 
     return {"words": len(text.split()), **extra}
 
 
+def _job(provider: ModuleType, video: Video, out_dir: Path, lang: str, model: str) -> dict:
+    try:
+        return process_video(provider, video, out_dir, lang, model)
+    finally:
+        time.sleep(random.uniform(*provider.DELAY))  # every worker keeps the polite pause
+
+
 def ingest(
     slug: str,
     platforms: list[str] | None = None,
@@ -83,9 +94,14 @@ def ingest(
     since: str | None = None,
     model: str = transcribe.DEFAULT_MODEL,
     dry_run: bool = False,
+    workers: int = DEFAULT_WORKERS,
 ) -> Counter:
-    """Transcribe everything new for a creator on each platform, then rebuild index.jsonl."""
+    """Transcribe everything new for a creator on each platform, then rebuild index.jsonl.
+
+    Listing runs on this thread; up to `workers` videos are fetched and transcribed at once.
+    """
     profile = load_profile(slug)
+    lang = profile.get("lang", "en")
     base = creator_dir(slug)
     out_dir = base / "transcripts"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -94,6 +110,25 @@ def ingest(
     done = {p.stem for p in out_dir.glob("*.md")}
     counts: Counter = Counter()
 
+    def collect(running: dict[Future, Video], futures: Iterable[Future]) -> None:
+        for future in futures:
+            video = running.pop(future)
+            try:
+                result = future.result()
+            except ytdlp.Blocked:
+                raise
+            except Exception as e:
+                tries = state["failed"].get(video.key, {}).get("tries", 0) + 1
+                print(f"  FAILED {video.key}: {e}")
+                state["failed"][video.key] = {"error": str(e)[:300], "tries": tries}
+                counts["failed"] += 1
+            else:
+                print(f"  {video.key}  {result['source']}  {result['words']} words", flush=True)
+                counts[result["source"]] += 1
+                done.add(video.key)
+                state["failed"].pop(video.key, None)
+            write_atomic(state_path, json.dumps(state, indent=2) + "\n")
+
     for name in platforms or list(PROVIDERS):
         provider = PROVIDERS[name]
         handle = profile.get(name) or ""
@@ -101,39 +136,30 @@ def ingest(
             continue
         print(f"== {name} {handle}")
         try:
-            for video in provider.list_videos(handle, limit, since, base):
-                if video.key in done:
-                    counts["already done"] += 1
-                    continue
-                tries = state["failed"].get(video.key, {}).get("tries", 0)
-                if tries >= MAX_TRIES:
-                    counts["gave up"] += 1
-                    continue
-                if dry_run:
-                    print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
-                    counts["listed"] += 1
-                    continue
+            with ThreadPoolExecutor(max(1, workers)) as pool:
+                running: dict[Future, Video] = {}
                 try:
-                    result = process_video(
-                        provider, video, out_dir, profile.get("lang", "en"), model
-                    )
-                    print(f"  {video.key}  {result['source']}  {result['words']} words")
-                    counts[result["source"]] += 1
-                    done.add(video.key)
-                    state["failed"].pop(video.key, None)
-                except ytdlp.Blocked:
-                    raise
-                except Exception as e:
-                    print(f"  FAILED {video.key}: {e}")
-                    state["failed"][video.key] = {"error": str(e)[:300], "tries": tries + 1}
-                    counts["failed"] += 1
-                write_atomic(state_path, json.dumps(state, indent=2) + "\n")
-                time.sleep(random.uniform(*provider.DELAY))
+                    for video in provider.list_videos(handle, limit, since, base):
+                        if video.key in done:
+                            counts["already done"] += 1
+                            continue
+                        if state["failed"].get(video.key, {}).get("tries", 0) >= MAX_TRIES:
+                            counts["gave up"] += 1
+                            continue
+                        if dry_run:
+                            print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
+                            counts["listed"] += 1
+                            continue
+                        running[pool.submit(_job, provider, video, out_dir, lang, model)] = video
+                        if len(running) >= workers:
+                            collect(running, wait(running, return_when=FIRST_COMPLETED).done)
+                finally:  # record work already in flight, even when listing is blocked
+                    collect(running, list(running))
         except ytdlp.Blocked as e:
             counts["blocked"] += 1
             print(
                 f"  {name} is refusing requests: {str(e)[:200]}\n"
-                "  Progress is saved. Wait a while and rerun, or rerun with "
+                "  Progress is saved. Wait a while and rerun (try --workers 1), or rerun with "
                 "--cookies-from-browser firefox (uses your logged-in session)."
             )
     if not dry_run:

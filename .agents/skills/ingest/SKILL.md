@@ -36,13 +36,13 @@ else that has a default.
 .venv/bin/creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
 ```
 
-- It's slow on purpose (polite pauses between videos): roughly 5–10 seconds per video with
-  captions, longer when Whisper has to transcribe. For more than about 50 videos, run it in the
+- It handles 4 videos at once, with a polite pause after each: roughly 1,000 captioned videos
+  an hour, slower when Whisper has to transcribe. For more than about 50 videos, run it in the
   background or ask the user to run it in their own terminal. If it's interrupted, rerun the
   same command.
 - Each video prints `caption` (the platform's own captions) or `whisper` (local transcription).
 - **"<platform> is refusing requests"**: progress is saved. Wait (an hour is usually enough) and
-  rerun, or rerun with `--cookies-from-browser firefox` to use the user's own logged-in session.
+  rerun with `--workers 1`, or rerun with `--cookies-from-browser firefox` to use the user's own logged-in session.
   Never use proxies, rotating user agents or anything else that dodges a platform's limits.
 - Videos that fail 3 times are skipped from then on; `creators/<slug>/state.json` lists why.
 

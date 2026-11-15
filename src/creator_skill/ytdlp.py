@@ -2,6 +2,7 @@
 
 import html
 import re
+import threading
 from collections.abc import Iterable, Iterator
 from pathlib import Path
 
@@ -33,18 +34,19 @@ class Blocked(Exception):
 
 
 _cookies: dict = {}
-_client: YoutubeDL | None = None
+_local = threading.local()  # YoutubeDL isn't thread-safe: one client per thread
+_generation = 0  # bumped by configure() so every thread rebuilds its client
 
 
 def configure(cookies_from_browser: str | None = None, cookies: Path | None = None) -> None:
     """Set cookies for every later request. Needed for Instagram and age-gated videos."""
-    global _client
+    global _generation
     _cookies.clear()
     if cookies_from_browser:
         _cookies["cookiesfrombrowser"] = (cookies_from_browser,)
     if cookies:
         _cookies["cookiefile"] = str(cookies)
-    _client = None
+    _generation += 1
 
 
 def _backoff(attempt: int) -> float:
@@ -70,10 +72,9 @@ def _params(**extra: object) -> dict:
 
 
 def _ydl() -> YoutubeDL:
-    global _client
-    if _client is None:
-        _client = YoutubeDL(_params())
-    return _client
+    if getattr(_local, "generation", None) != _generation:
+        _local.client, _local.generation = YoutubeDL(_params()), _generation
+    return _local.client
 
 
 def _raise_if_blocked(error: Exception) -> None:

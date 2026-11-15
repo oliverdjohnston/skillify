@@ -75,6 +75,8 @@ Project skills live in `.agents/skills/` (`.claude/skills` is a symlink to it): 
 - **Faithfulness over helpfulness** in notes and skills. Web research only with `--enrich`, and
   labelled as external.
 - **Resume by file existence**, with atomic writes. Never add a database.
+- **4 videos at once by default** (`--workers`). Each worker has its own yt-dlp client (not
+  thread-safe) and keeps the polite pause; Whisper runs one job at a time behind a lock.
 - `--limit N` is per platform (per tab on YouTube). `--since` stops after 5 old videos in a row,
   because pinned posts are old.
 

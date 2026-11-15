@@ -82,6 +82,7 @@ Useful options for `ingest`:
 | `--platform tiktok` | one platform (repeatable) |
 | `--model tiny\|base\|small\|medium\|large` | Whisper size for videos without captions (default `small`) |
 | `--cookies-from-browser firefox` | use your logged-in browser session (Instagram, age-gated videos) |
+| `--workers N` | videos processed at once (default 4; use 1 if a platform keeps refusing) |
 | `--dry-run` | list what would be processed |
 
 One-off videos: `creator-skill transcribe <url> [<url> ...]`.

@@ -52,6 +52,9 @@ def _parser() -> argparse.ArgumentParser:
     )
     ingest.add_argument("--since", type=_date, metavar="YYYY-MM-DD", help="skip older videos")
     ingest.add_argument("--dry-run", action="store_true", help="list videos without processing")
+    ingest.add_argument(
+        "--workers", type=int, default=4, help="videos processed at once (default 4; 1 = gentlest)"
+    )
     network_flags(ingest)
 
     adhoc = sub.add_parser("transcribe", help="transcribe specific video URLs")
@@ -140,7 +143,7 @@ def main(argv: list[str] | None = None) -> None:
         ingest.transcribe_urls(args.urls, args.creator, args.model)
         return
     counts = ingest.ingest(
-        args.slug, args.platform, args.limit, args.since, args.model, args.dry_run
+        args.slug, args.platform, args.limit, args.since, args.model, args.dry_run, args.workers
     )
     print("\nSummary:", ", ".join(f"{v} {k}" for k, v in counts.items()) or "nothing to do")
 

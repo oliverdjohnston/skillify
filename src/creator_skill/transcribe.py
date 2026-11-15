@@ -3,11 +3,13 @@
 import importlib.util
 import os
 import platform
+import threading
 from functools import cache
 from pathlib import Path
 
 DEFAULT_MODEL = os.environ.get("WHISPER_MODEL", "small")
 MLX_REPOS = {"large": "mlx-community/whisper-large-v3-mlx"}
+_lock = threading.Lock()  # Whisper is compute-bound and mlx shares one GPU: one job at a time
 
 
 def backend() -> str:
@@ -27,6 +29,11 @@ def _faster_model(model: str):  # returns faster_whisper.WhisperModel (imported 
 
 def transcribe(audio: Path, model: str = DEFAULT_MODEL) -> tuple[str, str | None]:
     """Return (text, detected language) for an audio or video file."""
+    with _lock:
+        return _transcribe(audio, model)
+
+
+def _transcribe(audio: Path, model: str) -> tuple[str, str | None]:
     if backend() == "mlx-whisper":
         import mlx_whisper
 

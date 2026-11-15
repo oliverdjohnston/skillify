@@ -131,3 +131,22 @@ def test_migrate_accounts(creators, tmp_path):
     assert ingest.migrate_accounts(accounts) == ["some-creator"]
     assert ingest.load_profile("some-creator")["tiktok"] == "@Some.Creator"
     assert not accounts.exists() and (tmp_path / "accounts.json.migrated").exists()
+
+
+def test_parallel_workers_process_everything(creators, monkeypatch):
+    calls = fake_provider(monkeypatch, vids(*map(str, range(10))), captions={"0": "c " * 30})
+    counts = ingest.ingest("ana", workers=4)
+    assert (counts["caption"], counts["whisper"], calls["audio"]) == (1, 9, 9)
+    assert len(list((creators / "ana/transcripts").glob("*.md"))) == 10
+
+
+def test_block_inside_a_worker_stops_the_platform(creators, monkeypatch, capsys):
+    fake_provider(monkeypatch, vids("1", "2", "3"))
+
+    def blocked(path, model):
+        raise ytdlp.Blocked("HTTP Error 429")
+
+    monkeypatch.setattr(transcribe, "transcribe", blocked)
+    counts = ingest.ingest("ana", workers=1)
+    assert counts["blocked"] == 1 and counts["failed"] == 0
+    assert "refusing requests" in capsys.readouterr().out
