@@ -132,7 +132,7 @@ def sources_markdown(base: Path, name: str) -> str:
     return "\n".join(lines) + "\n"
 
 
-_QUOTE = re.compile(r'"([^"]{12,})"')
+_QUOTE = re.compile(r'"([^"\n]{12,})"')
 
 
 def quote_check(base: Path) -> tuple[int, int]:
