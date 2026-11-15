@@ -9,6 +9,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
+from .dedupe import normalise
 from .models import read_transcript, split_frontmatter
 from .providers import PROVIDERS
 
@@ -131,6 +132,22 @@ def sources_markdown(base: Path, name: str) -> str:
     return "\n".join(lines) + "\n"
 
 
+_QUOTE = re.compile(r'"([^"]{12,})"')
+
+
+def quote_check(base: Path) -> tuple[int, int]:
+    """(verbatim, total) quotes in notes, checked against their transcripts."""
+    found = total = 0
+    for note in sorted((base / "notes").glob("*.md")):
+        transcript = base / "transcripts" / note.name
+        if transcript.exists():
+            text = normalise(read_transcript(transcript)[1])
+            for quote in _QUOTE.findall(note.read_text(encoding="utf-8")):
+                total += 1
+                found += normalise(quote) in text
+    return found, total
+
+
 def stats(base: Path) -> dict:
     """Counts for the end-of-run reports."""
     metas = [read_transcript(p)[0] for p in sorted((base / "transcripts").glob("*.md"))]
@@ -151,6 +168,7 @@ def stats(base: Path) -> dict:
         "promo": sum(n["promo"] for n in notes.values()),
         "sponsored": sum(n["sponsored"] for n in notes.values()),
         "date_range": [dates[0], dates[-1]] if dates else None,
+        "quotes_verbatim": "{}/{}".format(*quote_check(base)),
     }
 
 

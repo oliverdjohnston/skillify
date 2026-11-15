@@ -72,6 +72,15 @@ def test_sources_list_every_noted_video_with_links(base):
     assert "tiktok_b" not in md
 
 
+def test_quote_check_counts_verbatim_quotes(base):
+    add_note(base, "tiktok_a", ["hooks"])
+    note = base / "notes" / "tiktok_a.md"
+    note.write_text(
+        note.read_text() + '- real — "aw1 aw2 aw3 aw4 aw5"\n- fake — "words never said here"\n'
+    )
+    assert notes.quote_check(base) == (1, 2)
+
+
 def test_stats(base):
     add_note(base, "tiktok_a", ["hooks"], content_type="promo")
     s = notes.stats(base)

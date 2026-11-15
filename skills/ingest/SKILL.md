@@ -85,6 +85,7 @@ Tell the user:
 - the number of videos per platform and how many used captions vs Whisper
 - cross-posts merged, and videos with no speech or too short
 - notes written, how many were promo (down-weighted) and how many had a sponsor read
+- `quotes_verbatim`: if well under 90%, spot-check a few notes for invented quotes
 - the date range covered
 
 Point them to the `skillify` skill next.
