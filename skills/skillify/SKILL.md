@@ -29,7 +29,7 @@ Creator data lives in `creators/` under the current folder.
 | `--enrich` | add labelled web research (step 6); it is off otherwise, so don't ask about it |
 | `install to <path>` | the install destination: skip that question |
 | `all topics` | include every topic cluster without asking |
-| `only seo`, `only <subject>` | include only the clusters about that subject; list what you left out in the report |
+| `only <subject>` (e.g. `only cooking`, `only seo and ai`) | optional: include only the clusters about that subject, judging closely related ones by meaning, and list what you left out in the report. Without it, every topic is included |
 
 Ask only for what wasn't given, all together in one message (mode, topics, install location).
 
