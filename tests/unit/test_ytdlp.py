@@ -42,6 +42,8 @@ VTT = [{"ext": "vtt", "url": "u"}]
         ({"en": VTT, "ja": VTT}, {"en-orig": VTT}, "en", "en"),  # manual in creator's language
         ({"ja": VTT}, {"en-orig": VTT, "fr": VTT}, "en", "en-orig"),  # foreign manual = translation
         ({}, {"es-orig": VTT, "en": VTT}, "en", "es-orig"),  # plain auto "en" is a translation
+        ({}, {"ar-orig": VTT, "en-orig": VTT, "en-US-orig": VTT}, "en", "en-orig"),  # dubbed
+        ({}, {"ar-orig": VTT, "fr-orig": VTT}, "en", None),  # dubbed, creator's language unknown
         ({"eng-US": VTT}, {}, "en", "eng-US"),  # TikTok ISO 639-2 key
         ({"spa-ES": VTT}, {}, "en", "spa-ES"),  # TikTok's only track is its own ASR
         ({"spa-ES": VTT, "fra-FR": VTT}, {}, "en", None),  # ambiguous: use Whisper

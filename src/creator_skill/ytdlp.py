@@ -130,7 +130,9 @@ def pick_track(subtitles: dict, automatic: dict, lang: str) -> tuple[str, dict] 
     manual = {k: v for k, v in subtitles.items() if k != "live_chat"}
     wanted = {lang, LANG3.get(lang, lang)}
     keys = [k for k in manual if k.split("-")[0].lower() in wanted]
-    keys += [k for k in automatic if k.endswith("-orig")]  # YouTube's speech recognition
+    # YouTube's speech recognition. Auto-dubbed videos have one "-orig" track per dub language.
+    origs = [k for k in automatic if k.endswith("-orig")]
+    keys += [k for k in origs if k.split("-")[0].lower() in wanted] or origs[:1] * (len(origs) == 1)
     if len(manual) == 1:
         keys += list(manual)  # TikTok's only track is its own speech recognition
     for key in keys:
