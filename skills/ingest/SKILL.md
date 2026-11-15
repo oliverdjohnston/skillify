@@ -77,8 +77,8 @@ can't, work through the batches yourself one at a time.
 > `<batch>`, read `creators/<slug>/transcripts/<key>.md` and write
 > `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse one where it fits; otherwise make a
 > new kebab-case tag; never leave a video with speech untagged):
-> `<output of: creator-skill topics <slug>>`. If you write helper scripts, keep them in your own
-> new folder, never a shared one. Read nothing else. Reply only with the keys you
+> `<output of: creator-skill topics <slug>>`. Write each note yourself (scripts only to check
+> quotes), and keep any helper files in your own new folder. Read nothing else. Reply only with the keys you
 > wrote and any you skipped, with the reason.
 
 When a round finishes, run `notes-todo` again and repeat until `remaining` is 0. A note without

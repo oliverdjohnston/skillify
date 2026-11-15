@@ -67,5 +67,8 @@ Field rules:
   a subject over a format: `hook-writing`, not `tips`.
 - `## Claims` is required. If a video with speech makes no claim (a skit, a vlog), write
   `- none: <what the video is instead>`.
-- **Voice** matters for every video, including promo: hooks and structure are how they talk,
+- Write every note yourself after reading its transcript. Scripts may check quotes, never write
+  notes: a generic or first-sentence-by-default Voice section is useless.
+- **Voice** comes only from the creator's own speech; leave it out if they don't speak. It matters
+  for every video they do speak in, including promo: hooks and structure are how they talk,
   whatever the content.
