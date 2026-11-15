@@ -134,17 +134,17 @@ def ingest(
                 skipped["already done"] += 1
             elif tries(video.key) >= MAX_TRIES:
                 skipped["gave up"] += 1
-            elif dry_run:
-                print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
-                skipped["listed"] += 1
             else:
                 todo.append(video)
         with lock:
             counts.update(skipped)
-        print(
-            f"== {name} {handle}: {len(todo)} to process, {skipped['already done']} done",
-            flush=True,
-        )
+        print(f"== {name} {handle}: {len(todo)} new, {skipped['already done']} done", flush=True)
+        if dry_run:
+            for video in todo:
+                print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
+            with lock:
+                counts["listed"] += len(todo)
+            return
 
         pending, running, finished = iter(todo), {}, 0
         with ThreadPoolExecutor(workers) as pool:
