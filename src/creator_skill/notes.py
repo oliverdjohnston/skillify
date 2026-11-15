@@ -50,7 +50,7 @@ def _notes(base: Path, with_content: bool = True) -> dict[str, dict]:
 
 
 def todo(
-    base: Path, max_words: int = 15000, max_items: int = 25, long_top: int | None = None
+    base: Path, max_words: int = 30000, max_items: int = 75, long_top: int | None = None
 ) -> dict:
     """Batches of canonical video keys that still need a complete note, packed by word count.
 

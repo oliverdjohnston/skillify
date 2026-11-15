@@ -68,8 +68,8 @@ def _parser() -> argparse.ArgumentParser:
 
     todo = sub.add_parser("notes-todo", help="batches of videos that still need notes (JSON)")
     todo.add_argument("slug")
-    todo.add_argument("--max-words", type=int, default=15000, help="transcript words per batch")
-    todo.add_argument("--max-items", type=int, default=25, help="videos per batch")
+    todo.add_argument("--max-words", type=int, default=30000, help="transcript words per batch")
+    todo.add_argument("--max-items", type=int, default=75, help="videos per batch")
     todo.add_argument(
         "--long-top", type=int, metavar="N", help="only the N most-viewed videos over 3 minutes"
     )

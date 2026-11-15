@@ -59,7 +59,7 @@ that lists every URL.
 creator-skill notes-todo <slug>
 ```
 
-Notes are the expensive step: roughly 70k tokens per batch. If your agent lets you choose the
+Notes are the expensive step: roughly 100k tokens per batch (about 1,300 per short video). If your agent lets you choose the
 sub-agents' model, a smaller one handles short videos about as well, but in testing it caught
 only a third of the claims in long interviews, so prefer a capable model for long videos. If the creator has many long videos
 (podcasts, streams), say how many batches there are and offer to note only the most-viewed long
@@ -67,7 +67,8 @@ ones: `creator-skill notes-todo <slug> --long-top 150` keeps every short video p
 most-viewed videos over 3 minutes.
 
 This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete
-note yet, packed so each batch is about 15k transcript words. Videos under 20 words are skipped.
+note yet, packed so each batch is at most 75 videos or 30k transcript words. Bigger batches are
+much cheaper per note, because each sub-agent's fixed overhead is shared. Videos under 20 words are skipped.
 
 For each batch, give this task to a sub-agent if you can run them, at most 4 in parallel. If you
 can't, work through the batches yourself one at a time.
