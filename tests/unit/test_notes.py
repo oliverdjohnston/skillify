@@ -47,6 +47,14 @@ def test_todo_packs_by_words_and_skips_short_and_done(base):
     assert notes.todo(base)["batches"] == [["tiktok_b", "tiktok_c"]]
 
 
+def test_todo_long_top_keeps_most_viewed_long_videos(tmp_path):
+    for vid, seconds, views in [("s", 40, 1), ("l1", 1800, 50), ("l2", 1800, 900), ("l3", 600, 10)]:
+        add_transcript(tmp_path, "youtube", vid, f"{vid} " * 100, duration=seconds, views=views)
+    dedupe.rebuild(tmp_path)
+    keys = sum(notes.todo(tmp_path, long_top=1)["batches"], [])
+    assert sorted(keys) == ["youtube_l2", "youtube_s"]
+
+
 def test_topics_rank_non_promo_recurrence_then_views(base):
     add_note(base, "tiktok_a", ["Hooks", "editing"])
     add_note(base, "tiktok_b", ["hooks"], content_type="promo")

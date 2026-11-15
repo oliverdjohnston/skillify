@@ -46,6 +46,8 @@ creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
 - Each video prints `caption` (the platform's own captions) or `whisper` (local transcription).
 - **"<platform> is refusing requests"**: progress is saved; follow the advice it prints. Never use
   proxies, rotating user agents or anything else that dodges a platform's limits.
+- **"WARNING: … listing ended early"**: TikTok sometimes stops listing partway. Rerun the same
+  command later to pick up the rest.
 - Videos that fail 3 times are skipped from then on; `creators/<slug>/state.json` lists why.
 
 Cross-posts (the same clip on several platforms) are merged into one entry in `index.jsonl`
@@ -56,6 +58,11 @@ that lists every URL.
 ```bash
 creator-skill notes-todo <slug>
 ```
+
+Notes are the expensive step: roughly 70k tokens per batch. If the creator has many long videos
+(podcasts, streams), say how many batches there are and offer to note only the most-viewed long
+ones: `creator-skill notes-todo <slug> --long-top 150` keeps every short video plus the 150
+most-viewed videos over 3 minutes.
 
 This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete
 note yet, packed so each batch is about 15k transcript words. Videos under 20 words are skipped.

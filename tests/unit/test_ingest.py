@@ -194,3 +194,11 @@ def test_platforms_run_in_parallel(creators, monkeypatch):
         "tiktok_1",
         "youtube_1",
     }
+
+
+def test_warns_when_a_listing_ends_early(creators, monkeypatch, capsys):
+    fake_provider(monkeypatch, vids(*map(str, range(10))))
+    ingest.ingest("ana")
+    fake_provider(monkeypatch, vids("1", "2"))
+    ingest.ingest("ana")
+    assert "listed 2 videos, 10 last time" in capsys.readouterr().out

@@ -70,6 +70,9 @@ def _parser() -> argparse.ArgumentParser:
     todo.add_argument("slug")
     todo.add_argument("--max-words", type=int, default=15000, help="transcript words per batch")
     todo.add_argument("--max-items", type=int, default=25, help="videos per batch")
+    todo.add_argument(
+        "--long-top", type=int, metavar="N", help="only the N most-viewed videos over 3 minutes"
+    )
 
     topics = sub.add_parser("topics", help="topic tags across a creator's notes")
     topics.add_argument("slug")
@@ -104,7 +107,7 @@ def main(argv: list[str] | None = None) -> None:
             for path in sorted(ingest.CREATORS_DIR.glob("*/profile.json")):
                 print(f"{path.parent.name}: {path.read_text(encoding='utf-8').strip()}")
     elif args.command == "notes-todo":
-        print(json.dumps(notes.todo(base, args.max_words, args.max_items)))
+        print(json.dumps(notes.todo(base, args.max_words, args.max_items, args.long_top)))
     elif args.command == "stats":
         print(json.dumps(notes.stats(base), indent=2))
     elif args.command == "check":

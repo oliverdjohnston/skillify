@@ -14,6 +14,7 @@ from .models import read_transcript, split_frontmatter
 from .providers import PROVIDERS
 
 MIN_WORDS = 20  # e.g. "follow for part 2"
+LONG_SECONDS = 180  # YouTube's Shorts limit
 
 
 def load_index(base: Path) -> list[dict]:
@@ -48,15 +49,26 @@ def _notes(base: Path, with_content: bool = True) -> dict[str, dict]:
     return notes
 
 
-def todo(base: Path, max_words: int = 15000, max_items: int = 25) -> dict:
-    """Batches of canonical video keys that still need a complete note, packed by word count."""
+def todo(
+    base: Path, max_words: int = 15000, max_items: int = 25, long_top: int | None = None
+) -> dict:
+    """Batches of canonical video keys that still need a complete note, packed by word count.
+
+    `long_top` keeps only the N most-viewed videos over LONG_SECONDS; short ones are all kept.
+    """
     notes = _notes(base, with_content=False)
+    index = load_index(base)
+    long = sorted(
+        (e for e in index if (e.get("duration") or 0) > LONG_SECONDS),
+        key=lambda e: -e["views_total"],
+    )
+    skip = {e["key"] for e in long[long_top:]} if long_top is not None else set()
     batches: list[list[str]] = []
     current: list[str] = []
     words = 0
-    for entry in load_index(base):
+    for entry in index:
         key = entry["key"]
-        if entry["words"] < MIN_WORDS or notes.get(key, {}).get("_complete"):
+        if entry["words"] < MIN_WORDS or key in skip or notes.get(key, {}).get("_complete"):
             continue
         if current and (words + entry["words"] > max_words or len(current) >= max_items):
             batches.append(current)
