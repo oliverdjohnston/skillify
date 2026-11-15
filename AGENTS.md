@@ -61,6 +61,10 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 - **Captions first, Whisper second.** Platform captions are free and usually better. Never use
   a machine-translated track: on YouTube use a manual track in the creator's language or the
   `*-orig` auto track; on TikTok use the single track, or the one in the creator's language.
+- **YouTube auto-dubbed videos** have one `*-orig` track per dub language: pick the one in the
+  profile's `lang`, and any other only when it is the sole track.
+- **TikTok caption cues are out of order** in the file: `clean_subtitles` sorts them by start time.
+- **Interviews**: notes keep guests' points under `## Guest`, never in Claims; skillify ignores them.
 - **Whisper output in a language other than the profile's `lang` is dropped** (saved with 0
   words). Whisper invents text on music-only clips.
 - **No platform evasion.** No proxies, no user-agent rotation, and no `curl-cffi` impersonation
@@ -105,6 +109,5 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 ## Known gaps
 
 - Instagram hasn't been tested live in this repo yet (it needs real Reel URLs and cookies).
-- Cross-post dedupe is tested with unit tests only; real cross-posts haven't been observed yet.
 - TikTok caption keys use ISO 639-2 (`eng-US`); `LANG3` in `ytdlp.py` maps only a few languages.
   Extend it when a creator speaks another one.
