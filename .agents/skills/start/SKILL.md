@@ -24,30 +24,31 @@ python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"            # Windows: .venv\Scripts\pip install -e ".[dev]"
 ```
 
-Then activate it for the rest of the session: `source .venv/bin/activate`
-(Windows: `.venv\Scripts\activate`).
+Commands use `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`), so no
+activation is needed. Agents often run every command in a fresh shell.
 
 ## 2. Check it
 
 ```bash
-creator-skill doctor
+.venv/bin/creator-skill doctor
 ```
 
 Fix every `FAIL` with the command it prints, then rerun until it says `All good.` A `WARN` is
 optional (for example, mlx-whisper makes transcription much faster on Apple Silicon).
 
 ```bash
-pytest -q          # unit tests, no network; `pytest -m live` also hits YouTube once
+.venv/bin/pytest -q   # unit tests, no network; `pytest -m live` also hits YouTube once
 ```
 
 ## 3. Explain the workflow
 
-| Step | Skill | What happens |
+| Step | Example | What happens |
 |---|---|---|
-| 1 | `creator` | Save a creator's handles in `creators/<slug>/profile.json` |
-| 2 | `ingest` | Transcribe every video (platform captions first, Whisper otherwise), merge cross-posts, then extract structured notes per video |
-| 3 | `skillify` | Synthesise all the notes into one skill: their methods, their voice, or both |
-| – | `transcribe` | One-off transcripts of specific video URLs |
+| 1 | `creator https://www.tiktok.com/@ana` | Save the creator's handles (several platforms allowed) and check they resolve |
+| 2 | `ingest ana 20` or `ingest ana all` | Transcribe the videos (platform captions first, Whisper otherwise), merge cross-posts, extract notes per video |
+| 3 | `skillify ana both` | Synthesise the notes into one skill: their methods, their voice, or both |
+| – | `transcribe <video URLs>` | One-off transcripts |
 
-Everything for a creator lives in `creators/<slug>/`. Then ask what they want to do first,
-usually adding a creator.
+No account is needed for public TikTok and YouTube profiles. Instagram uses the cookies of a
+browser where the user is logged in. Everything for a creator lives in `creators/<slug>/`.
+Step 1 leads into steps 2 and 3, so the user can just start with `creator`.

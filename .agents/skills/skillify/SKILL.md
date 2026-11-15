@@ -1,6 +1,6 @@
 ---
 name: skillify
-description: Turn a creator's whole ingested output into one agent skill built from what they actually say, covering their methods and frameworks, their voice for writing scripts the way they talk, or both. Use when the user wants a skill, playbook or style guide from a creator who has been ingested.
+description: Turn a creator's whole ingested output into one agent skill built from what they actually say, covering their methods and frameworks, their voice for writing scripts the way they talk, or both. Use when the user wants a skill, playbook or style guide from a creator who has been ingested. Usage: skillify <slug> [knowledge|voice|both] [--enrich] [install to <path>].
 ---
 
 # Skillify a creator
@@ -12,11 +12,28 @@ Input: a creator slug, optionally with `--enrich`. The result is a standard Agen
 add generic advice, fill gaps with best practice, or "improve" their methods. Web research
 happens only with `--enrich`, and its results go in separately labelled sections.
 
+## Before you start
+
+If `.venv/bin/creator-skill` doesn't exist (Windows: `.venv\Scripts\creator-skill.exe`), do the
+`start` skill's setup first, then come back.
+
+## Read the arguments
+
+| The user wrote | Means |
+|---|---|
+| `ana` | creator slug (if none is given and only one creator exists, use it) |
+| `knowledge`, `voice` or `both` | the mode: skip that question |
+| `--enrich` (or "with web research") | do step 6 |
+| `install to ~/.claude/skills` or a path | the install destination: skip that question |
+| `all topics` | include every topic cluster without asking |
+
+Ask only for what wasn't given, all together in one message (mode, topics, install location).
+
 ## 0. Preconditions
 
 ```bash
-creator-skill stats <slug>
-creator-skill notes-todo <slug>
+.venv/bin/creator-skill stats <slug>
+.venv/bin/creator-skill notes-todo <slug>
 ```
 
 If `remaining` is above 0, finish the notes first (stage 2 of the `ingest` skill), or ask the
@@ -28,7 +45,7 @@ user whether to go ahead with partial notes.
    - **knowledge**: their methods, frameworks and rules of thumb
    - **voice**: write scripts and posts the way they talk
    - **both**
-2. **Topics**: run `creator-skill topics <slug>`. Merge synonymous or overlapping tags into 3–15
+2. **Topics**: run `.venv/bin/creator-skill topics <slug>`. Merge synonymous or overlapping tags into 3–15
    clusters (e.g. `hooks` + `hook-writing` + `openers` → *Hooks*), and drop tags with only promo
    videos. Show the clusters with their video counts and let the user pick (all by default).
 3. **Skill name**: suggest one that says what it does, e.g. `<slug>-video-strategy` (knowledge)
@@ -41,7 +58,7 @@ Work in `creators/<slug>/skill/<skill-name>/`.
 For each cluster:
 
 ```bash
-creator-skill topics <slug> --tags tag-a,tag-b,tag-c
+.venv/bin/creator-skill topics <slug> --tags tag-a,tag-b,tag-c
 ```
 
 That lists the cluster's videos (key, date, views, content type, promo and sponsored flags, note path), newest
@@ -112,7 +129,7 @@ Write `references/voice.md`:
 ## 4. Sources
 
 ```bash
-creator-skill sources <slug> --out creators/<slug>/skill/<skill-name>/references/sources.md
+.venv/bin/creator-skill sources <slug> --out creators/<slug>/skill/<skill-name>/references/sources.md
 ```
 
 This lists every noted video with its date, views, type and the links on every platform.
@@ -174,7 +191,7 @@ add one line under References saying that external context exists and where.
 ## 7. Check, install, report
 
 ```bash
-creator-skill check <slug> creators/<slug>/skill/<skill-name>
+.venv/bin/creator-skill check <slug> creators/<slug>/skill/<skill-name>
 ```
 
 Fix everything it reports: unknown keys mean an invented citation, so find the real video or cut

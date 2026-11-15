@@ -39,18 +39,37 @@ below yourself.
 
 ## Make a skill from a TikTok account
 
+In your agent, from this folder (in Claude Code, skills are slash commands):
+
+```
+/creator https://www.tiktok.com/@theirhandle
+```
+
+It saves the creator and checks the account, then offers to transcribe the videos and build the
+skill, asking only for what it can't work out. Each skill also takes its options directly:
+
+| Command | Does |
+|---|---|
+| `/creator <TikTok/YouTube/Instagram URLs> "Name"` | add a creator (one person, several platforms) |
+| `/ingest ana 20` · `/ingest ana all` · `/ingest ana since 2026-01-01 tiktok` | transcribe and take notes |
+| `/skillify ana both` · `/skillify ana voice --enrich` | build the skill |
+| `/transcribe <video URLs>` | one-off videos |
+
+Each skill sets up the Python environment itself if needed, so `/start` is optional.
+
+**Accounts:** none are needed for public TikTok and YouTube profiles. Instagram (and age-restricted
+YouTube videos) use the cookies from a browser where you're logged in:
+`--cookies-from-browser firefox`. Private accounts can't be processed.
+
+### Without an agent
+
 ```bash
 creator-skill creator add ana --name "Ana Example" --tiktok @ana   # add --youtube @ana etc.
 creator-skill ingest ana --dry-run --limit 3                       # check the handle works
 creator-skill ingest ana                                           # every video; resumable
 ```
 
-Then ask your agent:
-
-> Use the ingest skill to write notes for creator `ana`, then use the skillify skill to make a
-> skill from them.
-
-It asks whether you want **knowledge**, **voice** or **both**, which topics to include, and where
+Then ask your agent to run `/ingest ana notes-only` and `/skillify ana`. Skillify asks whether you want **knowledge**, **voice** or **both**, which topics to include, and where
 to install the result: `~/.claude/skills/` for Claude Code, `~/.agents/skills/` for Codex and
 other agents that read it, or a single project.
 

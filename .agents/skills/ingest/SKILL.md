@@ -1,6 +1,6 @@
 ---
 name: ingest
-description: Transcribe every video a creator has posted on TikTok, YouTube and Instagram, merge cross-posts, and extract structured notes from each one. Use when the user wants to process or update a creator's whole account, before turning it into a skill.
+description: Transcribe every video a creator has posted on TikTok, YouTube and Instagram, merge cross-posts, and extract structured notes from each one. Use when the user wants to process or update a creator's whole account, before turning it into a skill. Usage: ingest <slug> [all | N | since YYYY-MM-DD] [tiktok|youtube|instagram] [notes-only].
 ---
 
 # Ingest a creator
@@ -10,17 +10,30 @@ Two stages, both resumable: rerunning only does what is missing.
 1. **Transcripts** (a Python command, no model calls).
 2. **Notes** (you, the agent): structured extraction from each unique video.
 
-If `creators/<slug>/profile.json` doesn't exist, set it up with the `creator` skill first.
+## Before you start
+
+If `.venv/bin/creator-skill` doesn't exist (Windows: `.venv\Scripts\creator-skill.exe`), do the
+`start` skill's setup first, then come back.
+
+## Read the arguments
+
+| The user wrote | Means |
+|---|---|
+| `ana` | creator slug. If none is given and only one creator exists, use it; if several, ask which |
+| a profile URL or `@handle` instead of a slug | not set up yet: run the `creator` skill first, then continue here |
+| `all` / `everything` | no limit |
+| `20` | `--limit 20`: the newest 20 per platform (on YouTube, 20 Shorts plus 20 long-form) |
+| `since 2026-01-01` | `--since 2026-01-01` |
+| `tiktok`, `youtube`, `instagram` | `--platform <name>` (repeatable); default is every platform in the profile |
+| `notes-only` | skip stage 1 |
+
+If the amount isn't given, ask once: **everything**, or the newest N first? Don't ask anything
+else that has a default.
 
 ## Stage 1: transcripts
 
-Ask how much to process (defaults in bold):
-- **everything**, the newest N per platform (`--limit N`; on YouTube it is N Shorts plus N
-  long-form), or only videos since a date (`--since YYYY-MM-DD`)
-- **all platforms in the profile**, or some (`--platform tiktok --platform youtube`)
-
 ```bash
-creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
+.venv/bin/creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
 ```
 
 - It's slow on purpose (polite pauses between videos): roughly 5–10 seconds per video with
@@ -39,7 +52,7 @@ that lists every URL.
 ## Stage 2: notes
 
 ```bash
-creator-skill notes-todo <slug>
+.venv/bin/creator-skill notes-todo <slug>
 ```
 
 This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete
@@ -51,7 +64,7 @@ can't, work through the batches yourself one at a time.
 > Read `.agents/skills/ingest/note-template.md` and follow it exactly. For each key in
 > `<batch>`, read `creators/<slug>/transcripts/<key>.md` and write
 > `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse them where they fit):
-> `<output of: creator-skill topics <slug>>`. Read nothing else. Reply only with the keys you
+> `<output of: .venv/bin/creator-skill topics <slug>>`. Read nothing else. Reply only with the keys you
 > wrote and any you skipped, with the reason.
 
 When a round finishes, run `notes-todo` again and repeat until `remaining` is 0. A note without
@@ -63,7 +76,7 @@ within your context.
 ## Report
 
 ```bash
-creator-skill stats <slug>
+.venv/bin/creator-skill stats <slug>
 ```
 
 Tell the user:
