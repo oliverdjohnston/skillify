@@ -12,10 +12,8 @@ Two stages, both resumable: rerunning only does what is missing.
 
 ## Before you start
 
-Find the `creator-skill` command and use it for every command below:
-1. Inside the skillify repo: `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
-2. Otherwise `creator-skill` on the PATH, or `~/.local/bin/creator-skill`.
-3. Neither works: install it with the `start` skill (one command), then come back.
+Use `.venv/bin/creator-skill` inside the skillify repo, otherwise `creator-skill` on the PATH. If
+neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder.
 
@@ -46,9 +44,8 @@ creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
   background or ask the user to run it in their own terminal. If it's interrupted, rerun the
   same command.
 - Each video prints `caption` (the platform's own captions) or `whisper` (local transcription).
-- **"<platform> is refusing requests"**: progress is saved. Wait (an hour is usually enough) and
-  rerun with `--workers 1`, or rerun with `--cookies-from-browser firefox` to use the user's own logged-in session.
-  Never use proxies, rotating user agents or anything else that dodges a platform's limits.
+- **"<platform> is refusing requests"**: progress is saved; follow the advice it prints. Never use
+  proxies, rotating user agents or anything else that dodges a platform's limits.
 - Videos that fail 3 times are skipped from then on; `creators/<slug>/state.json` lists why.
 
 Cross-posts (the same clip on several platforms) are merged into one entry in `index.jsonl`

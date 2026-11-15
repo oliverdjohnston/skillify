@@ -44,7 +44,7 @@ Code in `src/creator_skill/` (one job per module):
 | Module | Job |
 |---|---|
 | `ytdlp.py` | the **only** yt-dlp code: listing, metadata, caption choice/cleaning, audio, `Blocked`, `window()` for --since/--limit |
-| `providers/` | one module per platform with `NAME`, `DELAY`, `list_videos`, `fetch_captions`, `download_audio`. To add X: one module plus one entry in `PROVIDERS` |
+| `providers/` | one module per platform with `NAME`, `DOMAINS`, `DELAY`, `list_videos`, `fetch_captions`, `download_audio`. Ingest runs a platform only when the profile has a handle for it; citation checks and URL routing derive from `PROVIDERS`. To add X: one module plus one entry in `PROVIDERS` |
 | `transcribe.py` | mlx-whisper on Apple Silicon if installed, else faster-whisper |
 | `ingest.py` | profiles, resumable ingest, ad hoc URLs |
 | `dedupe.py` | cross-post merging, `index.jsonl` |
@@ -78,6 +78,8 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
   cheap. The agent does the judgement.
 - **Faithfulness over helpfulness** in notes and skills. Web research only with `--enrich`, and
   labelled as external.
+- **All yt-dlp calls go through `ytdlp._blocking()`**, which turns rate limits and bot checks into
+  `Blocked`. Providers use `ytdlp.DownloadError`, never `yt_dlp` directly.
 - **Resume by file existence**, with atomic writes. Never add a database.
 - **4 videos at once by default** (`--workers`). Each worker has its own yt-dlp client (not
   thread-safe) and keeps the polite pause; Whisper runs one job at a time behind a lock.

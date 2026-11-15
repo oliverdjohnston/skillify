@@ -7,10 +7,8 @@ description: Transcribe specific TikTok, YouTube or Instagram video URLs without
 
 ## Before you start
 
-Find the `creator-skill` command and use it for every command below:
-1. Inside the skillify repo: `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
-2. Otherwise `creator-skill` on the PATH, or `~/.local/bin/creator-skill`.
-3. Neither works: install it with the `start` skill (one command), then come back.
+Use `.venv/bin/creator-skill` inside the skillify repo, otherwise `creator-skill` on the PATH. If
+neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder.
 

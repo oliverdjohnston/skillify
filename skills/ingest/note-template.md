@@ -51,16 +51,15 @@ Field rules:
   launch). `review` covers a product review. `none` when nobody actually speaks to the viewer:
   the transcript is only song lyrics, background music, noise, or one phrase repeated.
   Otherwise pick the closest of the rest.
-- **Never skip a video.** For `none`, write only the frontmatter with `topics: []` and
-  `## Claims` followed by `- none: <what the audio is, e.g. song lyrics>`. Without a note, the
-  video is queued again forever.
+- **Never skip a video**: a video without a note is queued again forever. For `none`, write only
+  the frontmatter with `topics: []` and `## Claims` with `- none: <what the audio is>`.
 - **sponsored**: `true` only when the transcript or description explicitly says so (a sponsor
   read, "paid partnership", `#ad`, an affiliate code). Put that mention after the value as a
   comment. Reviewing a product, or a brand sending it, is not sponsorship. Leave the sponsor
   read's own pitch out of `## Claims`.
 - **topics**: reuse an existing tag when it fits, rather than inventing a near-synonym. Prefer
   a subject over a format: `hook-writing`, not `tips`.
-- `## Claims` is required, even if it holds only one line. If the video truly makes no claim
-  (a skit, a vlog), write `- none: <what the video is instead>`.
+- `## Claims` is required. If a video with speech makes no claim (a skit, a vlog), write
+  `- none: <what the video is instead>`.
 - **Voice** matters for every video, including promo: hooks and structure are how they talk,
   whatever the content.

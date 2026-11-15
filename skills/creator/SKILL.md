@@ -7,10 +7,8 @@ description: Add a creator from their TikTok, YouTube or Instagram handles or pr
 
 ## Before you start
 
-Find the `creator-skill` command and use it for every command below:
-1. Inside the skillify repo: `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
-2. Otherwise `creator-skill` on the PATH, or `~/.local/bin/creator-skill`.
-3. Neither works: install it with the `start` skill (one command), then come back.
+Use `.venv/bin/creator-skill` inside the skillify repo, otherwise `creator-skill` on the PATH. If
+neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder. No account or sign-in is needed for
 public TikTok and YouTube profiles.
@@ -59,8 +57,9 @@ finishes, offer the `skillify` skill.
 
 ## Instagram
 
-yt-dlp can't list Instagram profiles at the moment, so Reels come from a URL list. Ask the user
-to paste Reel links into `creators/<slug>/instagram_urls.txt`, one per line. A handful is enough;
+yt-dlp can't list Instagram profiles at the moment, so Reels come from a URL list. Save the
+Instagram handle in the profile as usual (ingest only runs platforms the profile names), and ask
+the user to paste Reel links into `creators/<slug>/instagram_urls.txt`, one per line. A handful is enough;
 most Reels are cross-posts of TikToks or Shorts anyway. Instagram does need a sign-in: ingest
 with `--cookies-from-browser firefox` (or chrome/safari) while the user is logged in to Instagram
 in that browser. It uses their own session; nothing is stored here.
