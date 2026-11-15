@@ -202,3 +202,15 @@ def test_warns_when_a_listing_ends_early(creators, monkeypatch, capsys):
     fake_provider(monkeypatch, vids("1", "2"))
     ingest.ingest("ana")
     assert "listed 2 videos, 10 last time" in capsys.readouterr().out
+
+
+def test_most_viewed_keeps_the_top_videos(creators, monkeypatch):
+    videos = vids("low", "high", "mid")
+    for video, views in zip(videos, (5, 500, 50), strict=True):
+        video.views = views
+    fake_provider(monkeypatch, videos)
+    ingest.ingest("ana", most_viewed=2)
+    assert {p.stem for p in (creators / "ana/transcripts").glob("*.md")} == {
+        "tiktok_high",
+        "tiktok_mid",
+    }

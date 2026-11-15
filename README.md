@@ -84,6 +84,7 @@ Useful options for `ingest`:
 |---|---|
 | `--limit N` | only the newest N per platform (per tab on YouTube: N Shorts + N long-form) |
 | `--since 2026-01-01` | skip older videos |
+| `--most-viewed N` | only the N most-viewed videos per platform |
 | `--platform tiktok` | one platform (repeatable) |
 | `--model tiny\|base\|small\|medium\|large` | Whisper size for videos without captions (default `small`) |
 | `--cookies-from-browser firefox` | use your logged-in browser session (Instagram, age-gated videos) |

@@ -26,6 +26,7 @@ Creator data lives in `creators/` under the current folder.
 | `all` / `everything` | no limit |
 | `20` | `--limit 20`: the newest 20 per platform (on YouTube, 20 Shorts plus 20 long-form) |
 | `since 2026-01-01` | `--since 2026-01-01` |
+| `top 150` | `--most-viewed 150`: only the 150 most-viewed videos per platform |
 | `tiktok`, `youtube`, `instagram` | `--platform <name>` (repeatable); default is every platform in the profile |
 | `notes-only` | skip stage 1 |
 

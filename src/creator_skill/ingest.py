@@ -98,6 +98,7 @@ def ingest(
     model: str = transcribe.DEFAULT_MODEL,
     dry_run: bool = False,
     workers: int = DEFAULT_WORKERS,
+    most_viewed: int | None = None,
 ) -> Counter:
     """Transcribe everything new for a creator, then rebuild index.jsonl.
 
@@ -140,6 +141,8 @@ def ingest(
                 "Its listing ended early; rerun later to pick up the rest.",
                 flush=True,
             )
+        if most_viewed is not None:  # the listing already carries view counts
+            listed = sorted(listed, key=lambda v: -(v.views or 0))[:most_viewed]
         todo, skipped = [], Counter()
         for video in listed:
             if video.key in done:
