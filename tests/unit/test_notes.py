@@ -38,13 +38,13 @@ def test_todo_packs_by_words_and_skips_short_and_done(base):
     add_note(base, "tiktok_b", ["hooks"], complete=False)  # half-written: redo
     assert notes.todo(base, max_words=1000) == {
         "remaining": 2,
-        "batches": [["tiktok_b"], ["tiktok_c"]],
+        "batches": [["tiktok_c"], ["tiktok_b"]],  # biggest first; 900 + 400 > 1000
     }
     assert notes.todo(base, max_words=10_000, max_items=1)["batches"] == [
-        ["tiktok_b"],
         ["tiktok_c"],
+        ["tiktok_b"],
     ]
-    assert notes.todo(base)["batches"] == [["tiktok_b", "tiktok_c"]]
+    assert notes.todo(base)["batches"] == [["tiktok_c", "tiktok_b"]]
 
 
 def test_todo_long_top_keeps_most_viewed_long_videos(tmp_path):
@@ -134,3 +134,12 @@ def test_none_notes_are_complete_but_add_no_topics(base):
     assert "tiktok_a" not in sum(notes.todo(base)["batches"], [])
     assert notes.topics(base) == []
     assert notes.stats(base)["no_content"] == 1
+
+
+def test_todo_fills_batches_around_long_videos(tmp_path):
+    for i, words in enumerate([900, 100, 900, 100, 900, 100]):
+        text = " ".join(f"v{i}w{j}" for j in range(words))  # distinct, so dedupe keeps all
+        add_transcript(tmp_path, "youtube", f"v{i}", text, timestamp=1_700_000_000 + i)
+    dedupe.rebuild(tmp_path)
+    batches = notes.todo(tmp_path, max_words=1000)["batches"]
+    assert len(batches) == 3 and all(len(b) == 2 for b in batches)  # not 1+1+1+1+1+1

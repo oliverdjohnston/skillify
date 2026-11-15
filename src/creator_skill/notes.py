@@ -63,21 +63,24 @@ def todo(
         key=lambda e: -e["views_total"],
     )
     skip = {e["key"] for e in long[long_top:]} if long_top is not None else set()
-    batches: list[list[str]] = []
-    current: list[str] = []
-    words = 0
-    for entry in index:
-        key = entry["key"]
-        if entry["words"] < MIN_WORDS or key in skip or notes.get(key, {}).get("_complete"):
-            continue
-        if current and (words + entry["words"] > max_words or len(current) >= max_items):
-            batches.append(current)
-            current, words = [], 0
-        current.append(key)
-        words += entry["words"]
-    if current:
-        batches.append(current)
-    return {"remaining": sum(map(len, batches)), "batches": batches}
+    pending = [
+        e
+        for e in index
+        if e["words"] >= MIN_WORDS
+        and e["key"] not in skip
+        and not notes.get(e["key"], {}).get("_complete")
+    ]
+    # first-fit, biggest first: long videos otherwise leave many near-empty batches
+    batches: list[dict] = []
+    for entry in sorted(pending, key=lambda e: -e["words"]):
+        for batch in batches:
+            if len(batch["keys"]) < max_items and batch["words"] + entry["words"] <= max_words:
+                batch["keys"].append(entry["key"])
+                batch["words"] += entry["words"]
+                break
+        else:
+            batches.append({"keys": [entry["key"]], "words": entry["words"]})
+    return {"remaining": len(pending), "batches": [b["keys"] for b in batches]}
 
 
 def topics(base: Path) -> list[dict]:
