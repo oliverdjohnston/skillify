@@ -9,7 +9,7 @@ from ..models import Video
 
 NAME = "youtube"
 DOMAINS = ("youtube.com", "youtu.be")
-DELAY = (2.0, 5.0)
+DELAY = (1.0, 2.5)
 TABS = ("shorts", "videos")
 
 

@@ -54,6 +54,10 @@ def _backoff(attempt: int) -> float:
     return min(60, 5 * 2**attempt)
 
 
+# seconds between yt-dlp's own requests; YouTube tolerates more than TikTok
+REQUEST_SLEEP = {"youtube": 0.5}
+
+
 def _params(**extra: object) -> dict:
     return {
         "quiet": True,
@@ -72,10 +76,13 @@ def _params(**extra: object) -> dict:
     }
 
 
-def _ydl() -> YoutubeDL:
+def _ydl(platform: str) -> YoutubeDL:
     if getattr(_local, "generation", None) != _generation:
-        _local.client, _local.generation = YoutubeDL(_params()), _generation
-    return _local.client
+        _local.clients, _local.generation = {}, _generation
+    if platform not in _local.clients:
+        sleep = REQUEST_SLEEP.get(platform, 1)
+        _local.clients[platform] = YoutubeDL(_params(sleep_interval_requests=sleep))
+    return _local.clients[platform]
 
 
 def _raise_if_blocked(error: Exception) -> None:
@@ -96,7 +103,7 @@ def _blocking() -> Iterator[None]:
 def list_entries(url: str, platform: str) -> Iterator[Video]:
     """Yield videos from a profile or channel tab, newest first; pages are fetched lazily."""
     with _blocking():
-        result = _ydl().extract_info(url, download=False, process=False)
+        result = _ydl(platform).extract_info(url, download=False, process=False)
         for entry in result.get("entries") or ():
             if not entry or not entry.get("id"):
                 continue
@@ -111,9 +118,9 @@ def full_info(video: Video) -> dict:
     """Fetch the full metadata once, and fill in whatever the listing lacked."""
     if video.info is None:
         with _blocking():
-            info = _ydl().extract_info(video.url, download=False, process=False)
+            info = _ydl(video.platform).extract_info(video.url, download=False, process=False)
             while info.get("_type") == "url":  # short links (vm.tiktok.com) resolve in steps
-                info = _ydl().extract_info(info["url"], download=False, process=False)
+                info = _ydl(video.platform).extract_info(info["url"], download=False, process=False)
         video.info = info
         full = Video.from_info(video.platform, info)
         video.id = video.id or full.id  # never change a known id: it is the resume key
@@ -188,7 +195,7 @@ def captions(video: Video, lang: str = "en") -> tuple[str, str] | None:
     raw = track.get("data")
     if raw is None:
         try:  # fetch now: TikTok caption URLs are signed and expire
-            raw = _ydl().urlopen(track["url"]).read().decode("utf-8", "replace")
+            raw = _ydl(video.platform).urlopen(track["url"]).read().decode("utf-8", "replace")
         except Exception as e:  # fall back to Whisper
             _raise_if_blocked(e)
             return None
@@ -200,6 +207,7 @@ def download_audio(video: Video, workdir: Path) -> Path:
     """Download the best audio-only stream (or the full file if there is none) into workdir."""
     params = _params(
         format="bestaudio/best",
+        sleep_interval_requests=REQUEST_SLEEP.get(video.platform, 1),
         outtmpl=str(workdir / "%(id)s.%(ext)s"),
         writesubtitles=False,
         writeautomaticsub=False,

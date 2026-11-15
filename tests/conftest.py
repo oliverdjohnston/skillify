@@ -32,7 +32,7 @@ class FakeYDL:
 def fake_ydl(monkeypatch):
     def install(infos: dict, captions: dict | None = None) -> FakeYDL:
         fake = FakeYDL(infos, captions)
-        monkeypatch.setattr(ytdlp, "_ydl", lambda: fake)
+        monkeypatch.setattr(ytdlp, "_ydl", lambda platform: fake)
         return fake
 
     return install
