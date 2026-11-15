@@ -1,0 +1,50 @@
+[project]
+name = "creator-skill"
+version = "0.3.0"
+description = "Turn a creator's TikTok, YouTube and Instagram videos into transcripts and a Claude skill"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Anonymous"}
+]
+keywords = ["tiktok", "youtube", "instagram", "transcription", "whisper", "claude", "skills"]
+
+dependencies = [
+    "yt-dlp[default,deno]>=2026.10.26",
+    "faster-whisper>=1.2.1",
+]
+
+[project.optional-dependencies]
+mac = [
+    "mlx-whisper>=0.4.3; sys_platform == 'darwin' and platform_machine == 'arm64'",
+]
+dev = [
+    "pytest>=9.0",
+    "ruff>=0.14",
+]
+
+[project.scripts]
+creator-skill = "creator_skill.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+markers = [
+    "live: hits real platforms over the network (opt in with -m live)",
+]
+addopts = "-m 'not live'"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
