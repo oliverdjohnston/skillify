@@ -74,7 +74,8 @@ can't, work through the batches yourself one at a time.
 
 > Read `<absolute path of note-template.md in this skill's folder>` and follow it exactly. For each key in
 > `<batch>`, read `creators/<slug>/transcripts/<key>.md` and write
-> `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse them where they fit):
+> `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse one where it fits; otherwise make a
+> new kebab-case tag; never leave a video with speech untagged):
 > `<output of: creator-skill topics <slug>>`. Read nothing else. Reply only with the keys you
 > wrote and any you skipped, with the reason.
 
