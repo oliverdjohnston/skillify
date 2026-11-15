@@ -1,6 +1,6 @@
 [project]
 name = "creator-skill"
-version = "0.3.0"
+version = "0.1.0"
 description = "Turn a creator's TikTok, YouTube and Instagram videos into transcripts and a Claude skill"
 readme = "README.md"
 requires-python = ">=3.11"
