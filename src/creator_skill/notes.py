@@ -1,6 +1,6 @@
 """Helpers for the agent-side steps: which videos still need notes, topic tallies, sources, stats.
 
-Notes are written by an agent (see .agents/skills/ingest/note-template.md); this module only
+Notes are written by an agent (see skills/ingest/note-template.md); this module only
 reads them, so it stays lenient about formatting.
 """
 
@@ -9,7 +9,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from .models import read_transcript
+from .models import read_transcript, split_frontmatter
+from .providers import PROVIDERS
 
 MIN_WORDS = 20  # shorter transcripts ("follow for part 2") carry nothing worth extracting
 
@@ -24,12 +25,9 @@ def load_index(base: Path) -> list[dict]:
 def read_note(path: Path) -> dict:
     """Frontmatter of a note as a dict; `topics` becomes a list of kebab-case tags."""
     text = path.read_text(encoding="utf-8")
-    meta: dict = {"_complete": "## Claims" in text}
-    if text.startswith("---"):
-        for line in text.split("---", 2)[1].splitlines():
-            if ":" in line:
-                key, value = line.split(":", 1)
-                meta[key.strip()] = value.split("#", 1)[0].strip()
+    fields, _ = split_frontmatter(text)
+    meta: dict = {k: v.split("#", 1)[0].strip() for k, v in fields.items()}  # drop # comments
+    meta["_complete"] = "## Claims" in text
     meta["topics"] = [
         re.sub(r"[^a-z0-9]+", "-", tag.strip(" '\"").lower()).strip("-")
         for tag in meta.get("topics", "").strip("[]").split(",")
@@ -41,13 +39,17 @@ def read_note(path: Path) -> dict:
     return meta
 
 
-def _notes(base: Path) -> dict[str, dict]:
-    return {p.stem: read_note(p) for p in sorted((base / "notes").glob("*.md"))}
+def _notes(base: Path, with_content: bool = True) -> dict[str, dict]:
+    """Notes by key; by default without `content_type: none` (music or noise, nothing said)."""
+    notes = {p.stem: read_note(p) for p in sorted((base / "notes").glob("*.md"))}
+    if with_content:
+        notes = {k: n for k, n in notes.items() if n.get("content_type") != "none"}
+    return notes
 
 
 def todo(base: Path, max_words: int = 15000, max_items: int = 25) -> dict:
     """Batches of canonical video keys that still need a complete note, packed by word count."""
-    notes = _notes(base)
+    notes = _notes(base, with_content=False)
     batches: list[list[str]] = []
     current: list[str] = []
     words = 0
@@ -71,8 +73,8 @@ def topics(base: Path) -> list[dict]:
     rows: dict[str, dict] = {}
     for key, note in _notes(base).items():
         entry = index.get(key)
-        if not entry or note.get("content_type") == "none":
-            continue  # no longer canonical, or nothing was said
+        if not entry:
+            continue  # note for a video that is no longer canonical
         for tag in note["topics"]:
             row = rows.setdefault(tag, {"tag": tag, "videos": 0, "promo": 0, "views": 0})
             row["videos"] += 1
@@ -134,7 +136,7 @@ def stats(base: Path) -> dict:
     metas = [read_transcript(p)[0] for p in sorted((base / "transcripts").glob("*.md"))]
     spoken = [m for m in metas if m.get("words")]
     index = load_index(base)
-    notes = _notes(base)
+    notes = _notes(base, with_content=False)
     dates = sorted(m["date"] for m in spoken if m.get("date"))
     return {
         "transcripts": len(metas),
@@ -152,7 +154,7 @@ def stats(base: Path) -> dict:
     }
 
 
-_KEY = re.compile(r"\b(?:tiktok|youtube|instagram)_[\w-]+")
+_KEY = re.compile(rf"\b(?:{'|'.join(PROVIDERS)})_[\w-]+")
 _NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 MAX_SKILL_LINES = 400
 
@@ -163,21 +165,16 @@ def check_skill(base: Path, skill_dir: Path) -> list[str]:
     if not skill_md.exists():
         return [f"{skill_md} is missing"]
     text = skill_md.read_text(encoding="utf-8")
-    front = text.split("---", 2)[1] if text.startswith("---") else ""
-    fields = dict(
-        (k.strip(), v.strip())
-        for k, v in (ln.split(":", 1) for ln in front.splitlines() if ":" in ln)
-    )
+    fields, _ = split_frontmatter(text)
+    lines = text.count("\n")
     problems = []
     name = fields.get("name", "")
     if name != skill_dir.name or not _NAME.fullmatch(name) or len(name) > 64:
         problems.append("frontmatter name must be lowercase-hyphenated and match the folder name")
     if not 0 < len(fields.get("description", "")) <= 1024:
         problems.append("frontmatter description must be 1-1024 characters")
-    if text.count("\n") > MAX_SKILL_LINES:
-        problems.append(
-            f"SKILL.md has {text.count(chr(10))} lines (keep it under {MAX_SKILL_LINES})"
-        )
+    if lines > MAX_SKILL_LINES:
+        problems.append(f"SKILL.md has {lines} lines (keep it under {MAX_SKILL_LINES})")
     if not (skill_dir / "references" / "sources.md").exists():
         problems.append("references/sources.md is missing (run: creator-skill sources)")
     known = {c["key"] for e in load_index(base) for c in e["copies"]}

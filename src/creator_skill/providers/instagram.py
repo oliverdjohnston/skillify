@@ -12,6 +12,7 @@ from .. import ytdlp
 from ..models import Video
 
 NAME = "instagram"
+DOMAINS = ("instagram.com",)
 DELAY = (8.0, 15.0)
 URL_FILE = "instagram_urls.txt"
 _REEL = re.compile(r"instagram\.com/(?:[\w.]+/)?(?:reels?|p)/([\w-]+)")

@@ -1,7 +1,6 @@
 """Captions, listing windows, metadata merging and block detection."""
 
 import pytest
-from yt_dlp.utils import DownloadError
 
 from creator_skill import ytdlp
 from creator_skill.models import Video
@@ -100,14 +99,14 @@ def test_list_entries_skips_unusable_entries(fake_ydl):
 
 
 def test_rate_limit_becomes_blocked(fake_ydl):
-    fake_ydl({"https://list": DownloadError("ERROR: HTTP Error 429: Too Many Requests")})
+    fake_ydl({"https://list": ytdlp.DownloadError("ERROR: HTTP Error 429: Too Many Requests")})
     with pytest.raises(ytdlp.Blocked):
         list(ytdlp.list_entries("https://list", "tiktok"))
 
 
 def test_other_errors_pass_through(fake_ydl):
-    fake_ydl({"https://list": DownloadError("ERROR: Video unavailable")})
-    with pytest.raises(DownloadError):
+    fake_ydl({"https://list": ytdlp.DownloadError("ERROR: Video unavailable")})
+    with pytest.raises(ytdlp.DownloadError):
         list(ytdlp.list_entries("https://list", "tiktok"))
 
 

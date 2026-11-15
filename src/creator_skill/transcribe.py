@@ -13,11 +13,13 @@ MLX_REPOS = {"large": "mlx-community/whisper-large-v3-mlx"}
 _lock = threading.Lock()  # Whisper is compute-bound and mlx shares one GPU: one job at a time
 
 
+APPLE_SILICON = platform.system() == "Darwin" and platform.machine() == "arm64"
+
+
 def backend() -> str:
     """Name of the Whisper backend that will be used."""
-    apple_silicon = platform.system() == "Darwin" and platform.machine() == "arm64"
     # mlx-whisper decodes audio with the ffmpeg binary; faster-whisper needs nothing extra
-    if apple_silicon and importlib.util.find_spec("mlx_whisper") and shutil.which("ffmpeg"):
+    if APPLE_SILICON and importlib.util.find_spec("mlx_whisper") and shutil.which("ffmpeg"):
         return "mlx-whisper"
     return "faster-whisper"
 

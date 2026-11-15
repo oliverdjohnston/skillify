@@ -3,19 +3,17 @@
 A transcript file existing means that video is done, so any run can be interrupted and resumed.
 """
 
-import json
 import random
 import re
 import tempfile
 import time
 from collections import Counter
-from collections.abc import Iterable
-from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 from types import ModuleType
 
 from . import dedupe, transcribe, ytdlp
-from .models import Video, write_atomic, write_transcript
+from .models import Video, read_json, write_json, write_transcript
 from .providers import PROVIDERS, for_url
 
 CREATORS_DIR = Path("creators")
@@ -32,31 +30,30 @@ def load_profile(slug: str) -> dict:
     path = creator_dir(slug) / "profile.json"
     if not path.exists():
         raise SystemExit(f"No creator '{slug}'. Add one with: creator-skill creator add {slug} ...")
-    return json.loads(path.read_text(encoding="utf-8"))
+    return read_json(path, {})
 
 
 def save_profile(slug: str, **fields: str | None) -> dict:
     """Create or update creators/<slug>/profile.json; None values are left unchanged."""
     path = creator_dir(slug) / "profile.json"
-    profile = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"name": slug}
+    profile = read_json(path, {"name": slug})
     profile.update({k: v for k, v in fields.items() if v is not None})
     path.parent.mkdir(parents=True, exist_ok=True)
-    write_atomic(path, json.dumps(profile, indent=2, ensure_ascii=False) + "\n")
+    write_json(path, profile)
     return profile
 
 
 def migrate_accounts(accounts: Path = Path("accounts.json")) -> list[str]:
     """Turn the old accounts.json (TikTok URLs) into creator profiles, then rename it."""
-    if not accounts.exists():
-        return []
     slugs = []
-    for entry in json.loads(accounts.read_text(encoding="utf-8")).get("profiles", []):
+    for entry in read_json(accounts, {}).get("profiles", []):
         handle = re.search(r"@([\w.-]+)", entry.get("url", ""))
         if handle:
-            slug = re.sub(r"[^a-z0-9-]+", "-", handle[1].lower()).strip("-")
+            slug = re.sub(r"[^a-z0-9]+", "-", handle[1].lower()).strip("-")
             save_profile(slug, name=entry.get("name") or handle[1], tiktok="@" + handle[1])
             slugs.append(slug)
-    accounts.rename(accounts.with_name("accounts.json.migrated"))
+    if accounts.exists():
+        accounts.rename(accounts.with_name("accounts.json.migrated"))
     return slugs
 
 
@@ -84,7 +81,12 @@ def _job(provider: ModuleType, video: Video, out_dir: Path, lang: str, model: st
     try:
         return process_video(provider, video, out_dir, lang, model)
     finally:
+        video.info = None  # full yt-dlp metadata is large; nothing needs it once written
         time.sleep(random.uniform(*provider.DELAY))  # every worker keeps the polite pause
+
+
+def _line(video: Video, result: dict) -> str:
+    return f"{video.key}  {result['source']}  {result['words']} words"
 
 
 def ingest(
@@ -98,88 +100,80 @@ def ingest(
 ) -> Counter:
     """Transcribe everything new for a creator on each platform, then rebuild index.jsonl.
 
-    Listing runs on this thread; up to `workers` videos are fetched and transcribed at once.
+    Each platform is listed in full first, then up to `workers` videos are processed at once.
     """
     profile = load_profile(slug)
     lang = profile.get("lang", "en")
+    workers = max(1, workers)
     base = creator_dir(slug)
     out_dir = base / "transcripts"
     out_dir.mkdir(parents=True, exist_ok=True)
     state_path = base / "state.json"
-    state = json.loads(state_path.read_text()) if state_path.exists() else {"failed": {}}
+    state = read_json(state_path, {"failed": {}})
     done = {p.stem for p in out_dir.glob("*.md")}
     counts: Counter = Counter()
-    progress = [0, 0]  # videos finished, videos to process on the current platform
 
-    def collect(running: dict[Future, Video], futures: Iterable[Future]) -> None:
-        for future in futures:
-            video = running.pop(future)
-            try:
-                result = future.result()
-            except ytdlp.Blocked:
-                raise
-            except Exception as e:
-                tries = state["failed"].get(video.key, {}).get("tries", 0) + 1
-                progress[0] += 1
-                print(f"  [{progress[0]}/{progress[1]}] FAILED {video.key}: {e}", flush=True)
-                state["failed"][video.key] = {"error": str(e)[:300], "tries": tries}
-                counts["failed"] += 1
-            else:
-                progress[0] += 1
-                print(
-                    f"  [{progress[0]}/{progress[1]}] {video.key}  {result['source']}  "
-                    f"{result['words']} words",
-                    flush=True,
-                )
-                counts[result["source"]] += 1
-                done.add(video.key)
-                state["failed"].pop(video.key, None)
-            write_atomic(state_path, json.dumps(state, indent=2) + "\n")
+    def tries(key: str) -> int:
+        return state["failed"].get(key, {}).get("tries", 0)
 
     for name in platforms or list(PROVIDERS):
-        provider = PROVIDERS[name]
-        handle = profile.get(name) or ""
-        if not handle and not (base / f"{name}_urls.txt").exists():
+        provider, handle = PROVIDERS[name], profile.get(name)
+        if not handle:
             continue
         print(f"== {name} {handle}")
+        # List everything before processing: pausing mid-listing let TikTok's page cursor go
+        # stale, which silently ended the listing after ~600 of 2,300 videos.
+        listed: list[Video] = []
+        blocked = None
         try:
-            # List everything before processing: pausing mid-listing let TikTok's page cursor go
-            # stale, which silently ended the listing after ~600 of 2,300 videos.
-            todo = []
-            listed: list[Video] = []
-            listing_blocked = None
-            try:
-                for video in provider.list_videos(handle, limit, since, base):
-                    listed.append(video)
-            except ytdlp.Blocked as e:  # still process what was listed before the block
-                listing_blocked = e
-            for video in listed:
-                if video.key in done:
-                    counts["already done"] += 1
-                elif state["failed"].get(video.key, {}).get("tries", 0) >= MAX_TRIES:
-                    counts["gave up"] += 1
-                elif dry_run:
-                    print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
-                    counts["listed"] += 1
-                else:
-                    todo.append(video)
-            progress[:] = [0, len(todo)]
-            print(f"  {len(todo)} to process ({counts['already done']} already done)", flush=True)
-            with ThreadPoolExecutor(max(1, workers)) as pool:
-                running: dict[Future, Video] = {}
-                try:
-                    for video in todo:
-                        running[pool.submit(_job, provider, video, out_dir, lang, model)] = video
-                        if len(running) >= workers:
-                            collect(running, wait(running, return_when=FIRST_COMPLETED).done)
-                finally:  # record work already in flight, even when a worker is blocked
-                    collect(running, list(running))
-            if listing_blocked:
-                raise listing_blocked
-        except ytdlp.Blocked as e:
+            for video in provider.list_videos(handle, limit, since, base):
+                listed.append(video)
+        except ytdlp.Blocked as e:  # still process what was listed before the block
+            blocked = e
+        todo = []
+        for video in listed:
+            if video.key in done:
+                counts["already done"] += 1
+            elif tries(video.key) >= MAX_TRIES:
+                counts["gave up"] += 1
+            elif dry_run:
+                print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
+                counts["listed"] += 1
+            else:
+                todo.append(video)
+        print(f"  {len(todo)} to process ({counts['already done']} already done)", flush=True)
+
+        pending, running, finished = iter(todo), {}, 0
+        with ThreadPoolExecutor(workers) as pool:
+            while True:
+                while len(running) < workers and (video := next(pending, None)):
+                    running[pool.submit(_job, provider, video, out_dir, lang, model)] = video
+                if not running:
+                    break
+                for future in wait(running, return_when=FIRST_COMPLETED).done:
+                    video, finished = running.pop(future), finished + 1
+                    try:
+                        result = future.result()
+                    except ytdlp.Blocked as e:  # finish what's in flight, start nothing new
+                        blocked, pending = blocked or e, iter(())
+                        continue
+                    except Exception as e:
+                        print(f"  [{finished}/{len(todo)}] FAILED {video.key}: {e}", flush=True)
+                        state["failed"][video.key] = {
+                            "error": str(e)[:300],
+                            "tries": tries(video.key) + 1,
+                        }
+                        counts["failed"] += 1
+                    else:
+                        print(f"  [{finished}/{len(todo)}] {_line(video, result)}", flush=True)
+                        counts[result["source"]] += 1
+                        done.add(video.key)
+                        state["failed"].pop(video.key, None)
+                    write_json(state_path, state)
+        if blocked:
             counts["blocked"] += 1
             print(
-                f"  {name} is refusing requests: {str(e)[:200]}\n"
+                f"  {name} is refusing requests: {str(blocked)[:200]}\n"
                 "  Progress is saved. Wait a while and rerun (try --workers 1), or rerun with "
                 "--cookies-from-browser firefox (uses your logged-in session)."
             )
@@ -193,7 +187,7 @@ def transcribe_urls(
 ) -> None:
     """Transcribe specific video URLs into a creator folder (default: creators/adhoc)."""
     base = creator_dir(slug)
-    profile = load_profile(slug) if (base / "profile.json").exists() else save_profile(slug)
+    lang = save_profile(slug).get("lang", "en")
     out_dir = base / "transcripts"
     out_dir.mkdir(parents=True, exist_ok=True)
     for url in urls:
@@ -205,8 +199,7 @@ def transcribe_urls(
             if path.exists():
                 print(f"  {video.key}  already done: {path}")
                 continue
-            result = process_video(provider, video, out_dir, profile.get("lang", "en"), model)
-            print(f"  {video.key}  {result['source']}  {result['words']} words -> {path}")
+            print(f"  {_line(video, _job(provider, video, out_dir, lang, model))} -> {path}")
         except Exception as e:
             print(f"  FAILED {url}: {e}")
     dedupe.rebuild(base)

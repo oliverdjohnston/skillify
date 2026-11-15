@@ -4,6 +4,7 @@ import html
 import re
 import threading
 from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from yt_dlp import YoutubeDL
@@ -82,9 +83,19 @@ def _raise_if_blocked(error: Exception) -> None:
         raise Blocked(str(error)) from error
 
 
+@contextmanager
+def _blocking() -> Iterator[None]:
+    """Wrap every yt-dlp call: rate limits and bot checks become Blocked, the rest pass through."""
+    try:
+        yield
+    except (DownloadError, ExtractorError) as e:
+        _raise_if_blocked(e)
+        raise
+
+
 def list_entries(url: str, platform: str) -> Iterator[Video]:
     """Yield videos from a profile or channel tab, newest first; pages are fetched lazily."""
-    try:
+    with _blocking():
         result = _ydl().extract_info(url, download=False, process=False)
         for entry in result.get("entries") or ():
             if not entry or not entry.get("id"):
@@ -94,21 +105,15 @@ def list_entries(url: str, platform: str) -> Iterator[Video]:
             if entry.get("availability") in SKIP_AVAILABILITY:
                 continue
             yield Video.from_info(platform, entry)
-    except (DownloadError, ExtractorError) as e:
-        _raise_if_blocked(e)
-        raise
 
 
 def full_info(video: Video) -> dict:
     """Fetch the full metadata once, and fill in whatever the listing lacked."""
     if video.info is None:
-        try:
+        with _blocking():
             info = _ydl().extract_info(video.url, download=False, process=False)
             while info.get("_type") == "url":  # short links (vm.tiktok.com) resolve in steps
                 info = _ydl().extract_info(info["url"], download=False, process=False)
-        except (DownloadError, ExtractorError) as e:
-            _raise_if_blocked(e)
-            raise
         video.info = info
         full = Video.from_info(video.platform, info)
         video.id = video.id or full.id  # never change a known id: it is the resume key
@@ -197,12 +202,8 @@ def download_audio(video: Video, workdir: Path) -> Path:
         writesubtitles=False,
         writeautomaticsub=False,
     )
-    try:
-        with YoutubeDL(params) as ydl:
-            info = ydl.extract_info(video.url, download=True)
-    except (DownloadError, ExtractorError) as e:
-        _raise_if_blocked(e)
-        raise
+    with _blocking(), YoutubeDL(params) as ydl:
+        info = ydl.extract_info(video.url, download=True)
     return Path(info["requested_downloads"][0]["filepath"])
 
 

@@ -6,7 +6,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from . import transcribe
+from . import doctor, ingest, notes, transcribe, ytdlp
+from .ingest import DEFAULT_WORKERS
 from .providers import PROVIDERS
 
 
@@ -53,7 +54,10 @@ def _parser() -> argparse.ArgumentParser:
     ingest.add_argument("--since", type=_date, metavar="YYYY-MM-DD", help="skip older videos")
     ingest.add_argument("--dry-run", action="store_true", help="list videos without processing")
     ingest.add_argument(
-        "--workers", type=int, default=4, help="videos processed at once (default 4; 1 = gentlest)"
+        "--workers",
+        type=int,
+        default=DEFAULT_WORKERS,
+        help="videos processed at once (default %(default)s; 1 = gentlest)",
     )
     network_flags(ingest)
 
@@ -84,49 +88,12 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _creator_tools(args: argparse.Namespace) -> None:
-    from . import notes
-    from .ingest import creator_dir, load_profile
-
-    base = creator_dir(args.slug)
-    if args.command == "notes-todo":
-        print(json.dumps(notes.todo(base, args.max_words, args.max_items)))
-    elif args.command == "stats":
-        print(json.dumps(notes.stats(base), indent=2))
-    elif args.command == "check":
-        problems = notes.check_skill(base, args.skill_dir)
-        print("\n".join(f"- {p}" for p in problems) or f"{args.skill_dir} looks good.")
-        sys.exit(1 if problems else 0)
-    elif args.command == "sources":
-        args.out.parent.mkdir(parents=True, exist_ok=True)
-        name = load_profile(args.slug).get("name", args.slug)
-        args.out.write_text(notes.sources_markdown(base, name), encoding="utf-8")
-        print(f"Wrote {args.out}")
-    elif args.tags:
-        tags = {t.strip() for t in args.tags.split(",") if t.strip()}
-        print(json.dumps(notes.videos_for(base, tags), indent=1, ensure_ascii=False))
-    else:
-        print("| tag | videos | promo | views | newest |\n|---|---|---|---|---|")
-        for row in notes.topics(base):
-            print(
-                f"| {row['tag']} | {row['videos']} | {row['promo']} | {row['views']:,} "
-                f"| {row['newest'] or '?'} |"
-            )
-
-
 def main(argv: list[str] | None = None) -> None:
     args = _parser().parse_args(argv)
+    base = ingest.creator_dir(args.slug) if hasattr(args, "slug") else None
     if args.command == "doctor":
-        from .doctor import main as doctor
-
-        sys.exit(doctor())
-    if args.command in ("notes-todo", "topics", "sources", "stats", "check"):
-        _creator_tools(args)
-        return
-
-    from . import ingest, ytdlp
-
-    if args.command == "creator":
+        sys.exit(doctor.main())
+    elif args.command == "creator":
         for slug in ingest.migrate_accounts():
             print(f"Migrated accounts.json profile -> creators/{slug}/profile.json")
         if args.action == "add":
@@ -136,16 +103,38 @@ def main(argv: list[str] | None = None) -> None:
         else:
             for path in sorted(ingest.CREATORS_DIR.glob("*/profile.json")):
                 print(f"{path.parent.name}: {path.read_text(encoding='utf-8').strip()}")
-        return
-
-    ytdlp.configure(args.cookies_from_browser, args.cookies)
-    if args.command == "transcribe":
-        ingest.transcribe_urls(args.urls, args.creator, args.model)
-        return
-    counts = ingest.ingest(
-        args.slug, args.platform, args.limit, args.since, args.model, args.dry_run, args.workers
-    )
-    print("\nSummary:", ", ".join(f"{v} {k}" for k, v in counts.items()) or "nothing to do")
+    elif args.command == "notes-todo":
+        print(json.dumps(notes.todo(base, args.max_words, args.max_items)))
+    elif args.command == "stats":
+        print(json.dumps(notes.stats(base), indent=2))
+    elif args.command == "check":
+        problems = notes.check_skill(base, args.skill_dir)
+        print("\n".join(f"- {p}" for p in problems) or f"{args.skill_dir} looks good.")
+        sys.exit(1 if problems else 0)
+    elif args.command == "sources":
+        args.out.parent.mkdir(parents=True, exist_ok=True)
+        name = ingest.load_profile(args.slug).get("name", args.slug)
+        args.out.write_text(notes.sources_markdown(base, name), encoding="utf-8")
+        print(f"Wrote {args.out}")
+    elif args.command == "topics" and args.tags:
+        tags = {t.strip() for t in args.tags.split(",") if t.strip()}
+        print(json.dumps(notes.videos_for(base, tags), indent=1, ensure_ascii=False))
+    elif args.command == "topics":
+        print("| tag | videos | promo | views | newest |\n|---|---|---|---|---|")
+        for row in notes.topics(base):
+            print(
+                f"| {row['tag']} | {row['videos']} | {row['promo']} | {row['views']:,} "
+                f"| {row['newest'] or '?'} |"
+            )
+    else:
+        ytdlp.configure(args.cookies_from_browser, args.cookies)
+        if args.command == "transcribe":
+            ingest.transcribe_urls(args.urls, args.creator, args.model)
+            return
+        counts = ingest.ingest(
+            args.slug, args.platform, args.limit, args.since, args.model, args.dry_run, args.workers
+        )
+        print("\nSummary:", ", ".join(f"{v} {k}" for k, v in counts.items()) or "nothing to do")
 
 
 if __name__ == "__main__":

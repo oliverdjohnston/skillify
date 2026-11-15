@@ -1,7 +1,6 @@
 """Provider URL handling and the Instagram URL list."""
 
 import pytest
-from yt_dlp.utils import DownloadError
 
 from creator_skill import ytdlp
 from creator_skill.models import Video
@@ -15,7 +14,7 @@ def listed(monkeypatch):
     def fake_list(url, platform):
         urls.append(url)
         if url.endswith("/shorts"):
-            raise DownloadError("ERROR: This channel does not have a shorts tab")
+            raise ytdlp.DownloadError("ERROR: This channel does not have a shorts tab")
         yield Video(platform, url.rsplit("/", 1)[-1], url)
 
     monkeypatch.setattr(ytdlp, "list_entries", fake_list)

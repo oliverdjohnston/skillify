@@ -7,6 +7,7 @@ Captions and Whisper on the same audio differ by a few words, so texts are compa
 import json
 import re
 import unicodedata
+from collections import defaultdict
 from pathlib import Path
 
 from .models import read_transcript, write_atomic
@@ -38,6 +39,35 @@ def is_duplicate(a: dict, b: dict) -> bool:
     return len(a["_sh"] & b["_sh"]) / len(a["_sh"] | b["_sh"]) >= JACCARD
 
 
+def group_records(records: list[dict]) -> list[list[dict]]:
+    """Put each record in the first group whose first record it duplicates, else a new group.
+
+    Same result as comparing every record with every group, but only groups that share a
+    shingle (Jaccard >= 0.5 needs one) or, for short texts, the exact words are compared.
+    """
+    groups: list[list[dict]] = []
+    by_shingle: dict[tuple, list[int]] = defaultdict(list)
+    by_text: dict[tuple, list[int]] = defaultdict(list)
+    for record in records:
+        short = len(record["_words"]) < SHORT_WORDS
+        if short:
+            candidates = by_text.get(tuple(record["_words"]), [])
+        else:
+            candidates = sorted({i for sh in record["_sh"] for i in by_shingle.get(sh, ())})
+        for i in candidates:
+            if is_duplicate(groups[i][0], record):
+                groups[i].append(record)
+                break
+        else:
+            groups.append([record])
+            if short:
+                by_text[tuple(record["_words"])].append(len(groups) - 1)
+            else:
+                for sh in record["_sh"]:
+                    by_shingle[sh].append(len(groups) - 1)
+    return groups
+
+
 def rebuild(creator_dir: Path) -> list[dict]:
     """Group every transcript into unique videos and rewrite index.jsonl from scratch."""
     records = []
@@ -51,14 +81,7 @@ def rebuild(creator_dir: Path) -> list[dict]:
         records.append({**meta, "_words": words, "_sh": shingles(words)})
     records.sort(key=lambda r: (r.get("date") or "9999", PLATFORM_RANK.get(r["platform"], 9)))
 
-    groups: list[list[dict]] = []
-    for record in records:
-        for group in groups:
-            if is_duplicate(group[0], record):
-                group.append(record)
-                break
-        else:
-            groups.append([record])
+    groups = group_records(records)
 
     notes = creator_dir / "notes"
     index = []

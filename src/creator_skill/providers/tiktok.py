@@ -7,6 +7,7 @@ from .. import ytdlp
 from ..models import Video
 
 NAME = "tiktok"
+DOMAINS = ("tiktok.com",)
 DELAY = (2.0, 5.0)
 
 

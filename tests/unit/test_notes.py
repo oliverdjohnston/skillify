@@ -5,16 +5,12 @@ import json
 import pytest
 
 from creator_skill import dedupe, notes
-from creator_skill.models import Video, write_transcript
+from tests.conftest import add_transcript
 
 
 def add_video(base, vid, words, date_ts, views=10, platform="tiktok"):
-    video = Video(
-        platform, vid, f"https://{platform}/{vid}", title=f"T|{vid}", timestamp=date_ts, views=views
-    )
-    (base / "transcripts").mkdir(parents=True, exist_ok=True)
     text = " ".join(f"{vid}w{i}" for i in range(words))
-    write_transcript(base / "transcripts" / f"{video.key}.md", video, text, source="caption")
+    add_transcript(base, platform, vid, text, title=f"T|{vid}", timestamp=date_ts, views=views)
 
 
 def add_note(base, key, topics, content_type="tutorial", complete=True, sponsored="false"):

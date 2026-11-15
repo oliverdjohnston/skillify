@@ -1,8 +1,12 @@
 """Shared fixtures: a fake yt-dlp client fed with recorded-style info dicts."""
 
+import io
+from pathlib import Path
+
 import pytest
 
 from creator_skill import ytdlp
+from creator_skill.models import Video, write_transcript
 
 
 class FakeYDL:
@@ -21,8 +25,7 @@ class FakeYDL:
         return result
 
     def urlopen(self, url: str):
-        body = self.captions[url].encode()
-        return type("Resp", (), {"read": lambda self: body})()
+        return io.BytesIO(self.captions[url].encode())
 
 
 @pytest.fixture
@@ -49,3 +52,11 @@ def tiktok_info() -> dict:
         "like_count": 1200,
         "subtitles": {"eng-US": [{"url": "https://cdn.example/cap.vtt", "ext": "vtt"}]},
     }
+
+
+def add_transcript(base: Path, platform: str, vid: str, text: str, **video_fields) -> Video:
+    """Write creators/<x>/transcripts/<platform>_<vid>.md as ingest would (source: caption)."""
+    video = Video(platform, vid, f"https://{platform}/{vid}", **video_fields)
+    (base / "transcripts").mkdir(parents=True, exist_ok=True)
+    write_transcript(base / "transcripts" / f"{video.key}.md", video, text, source="caption")
+    return video

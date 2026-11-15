@@ -79,12 +79,28 @@ def write_transcript(path: Path, video: Video, text: str, **extra: object) -> No
     write_atomic(path, f"---\n{front}---\n\n{textwrap.fill(text, 100)}\n")
 
 
+def read_json(path: Path, default: dict) -> dict:
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
+
+
+def write_json(path: Path, obj: dict) -> None:
+    write_atomic(path, json.dumps(obj, indent=2, ensure_ascii=False) + "\n")
+
+
+def split_frontmatter(text: str) -> tuple[dict[str, str], str]:
+    """Raw `key: value` strings between the leading `---` fences, and the body after them."""
+    parts = text.split("---\n", 2)
+    if len(parts) < 3 or parts[0]:
+        return {}, text
+    fields = {}
+    for line in parts[1].splitlines():
+        if ":" in line:
+            key, value = line.split(":", 1)
+            fields[key.strip()] = value.strip()
+    return fields, parts[2]
+
+
 def read_transcript(path: Path) -> tuple[dict, str]:
     """Return (metadata, transcript text) from a file written by write_transcript."""
-    _, front, body = path.read_text(encoding="utf-8").split("---\n", 2)
-    meta = {}
-    for line in front.splitlines():
-        if line:
-            key, value = line.split(": ", 1)
-            meta[key] = json.loads(value)
-    return meta, " ".join(body.split())
+    fields, body = split_frontmatter(path.read_text(encoding="utf-8"))
+    return {k: json.loads(v) for k, v in fields.items()}, " ".join(body.split())
