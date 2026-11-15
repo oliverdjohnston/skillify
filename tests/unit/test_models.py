@@ -9,6 +9,7 @@ def test_transcript_round_trip(tmp_path):
         "abc",
         "https://youtu.be/abc",
         title='Say "hi" --- ok',
+        description="long caption " * 100 + "#ad",
         timestamp=1_700_000_000,
         views=5,
     )
@@ -25,5 +26,6 @@ def test_transcript_round_trip(tmp_path):
         "caption",
         len(text.split()),
     )
+    assert meta["description"].endswith("#ad")  # never truncated
     assert body == " ".join(text.split())
     assert not list(tmp_path.glob("*.tmp"))

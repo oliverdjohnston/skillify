@@ -67,7 +67,7 @@ def write_transcript(path: Path, video: Video, text: str, **extra: object) -> No
         "id": video.id,
         "url": video.url,
         "title": video.title,
-        "description": video.description[:500],
+        "description": video.description,
         "date": video.date,
         "duration": video.duration,
         "views": video.views,
