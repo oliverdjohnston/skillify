@@ -69,7 +69,7 @@ creator-skill stats <slug>
 Tell the user:
 - the number of videos per platform and how many used captions vs Whisper
 - cross-posts merged, and videos with no speech or too short
-- notes written, and how many were promo or sponsored
+- notes written, how many were promo (down-weighted) and how many had a sponsor read
 - the date range covered
 
 Point them to the `skillify` skill next.

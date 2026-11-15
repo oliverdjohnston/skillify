@@ -56,8 +56,8 @@ def test_topics_rank_non_promo_recurrence_then_views(base):
     add_note(base, "tiktok_b", ["hooks"], content_type="promo")
     add_note(base, "tiktok_c", ["editing", "gear"], sponsored="true")
     rows = {r["tag"]: r for r in notes.topics(base)}
-    # one non-promo video each, so views break the tie; gear has only promo
-    assert [r["tag"] for r in notes.topics(base)] == ["hooks", "editing", "gear"]
+    # sponsored is not promo: editing has 2 supporting videos, hooks 1, gear 1 (fewer views)
+    assert [r["tag"] for r in notes.topics(base)] == ["editing", "hooks", "gear"]
     assert rows["hooks"] | {"keys": None} == {
         "tag": "hooks",
         "videos": 2,
@@ -85,7 +85,7 @@ def test_stats(base):
         4,
         0,
     )
-    assert (s["too_short_for_notes"], s["notes"], s["promo_or_sponsored"]) == (1, 1, 1)
+    assert (s["too_short_for_notes"], s["notes"], s["promo"], s["sponsored"]) == (1, 1, 1, 0)
     json.dumps(s)
 
 

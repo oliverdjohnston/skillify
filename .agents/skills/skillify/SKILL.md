@@ -44,7 +44,7 @@ For each cluster:
 creator-skill topics <slug> --tags tag-a,tag-b,tag-c
 ```
 
-That lists the cluster's videos (key, date, views, content type, promo flag, note path), newest
+That lists the cluster's videos (key, date, views, content type, promo and sponsored flags, note path), newest
 first. Read those notes, and only check a transcript when you need a quote's context. Write
 `references/topics/<cluster>.md`:
 
@@ -78,8 +78,9 @@ first. Read those notes, and only check a transcript when you need a quote's con
 Ranking and judgement:
 - Order principles by how many **different** videos repeat them, then by those videos'
   combined views (`views_total`). Something said once in a low-view video goes last, or is cut.
-- Promo or sponsored videos don't add support on their own. Keep a claim from them only if
-  non-promo videos back it.
+- Promo videos (`promo: true`) don't add support on their own. Keep a claim from them only if
+  non-promo videos back it. A sponsored video counts normally, but a claim about its sponsor
+  needs backing from unsponsored videos.
 - Contradictions: the newer view wins in Principles. Record the change under
   *Changed over time*.
 - Cite the video keys for every point, as `[key]` or `[key1, key2]`.
@@ -191,7 +192,7 @@ Report briefly:
 - top themes with their video counts
 - what was excluded and why:
   - no speech or too short
-  - promo or sponsored, down-weighted
+  - promo videos, down-weighted, and sponsor reads
   - cross-posts merged
   - topics the user left out
 - whether `--enrich` added external material

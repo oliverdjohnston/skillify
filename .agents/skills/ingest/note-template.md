@@ -5,7 +5,7 @@ of advice in their skill can be traced back to them. Be faithful, not helpful:
 - Only what is in the transcript. No outside knowledge, no "best practices" they didn't state,
   no fixing advice you disagree with.
 - Paraphrase claims in plain words, and back each with a short verbatim quote (under 20 words)
-  copied exactly from the transcript.
+  copied exactly from the transcript (never from the title or description).
 - Transcripts come from captions or speech recognition, so expect small errors and no
   punctuation. Fix obvious mis-hearings in paraphrases; keep quotes as they are.
 - Leave a section out entirely if the video has nothing for it. Don't pad.
@@ -16,7 +16,7 @@ Write `creators/<slug>/notes/<key>.md` in exactly this shape:
 ---
 key: <key>
 content_type: <tutorial | opinion | story | review | promo>
-sponsored: <true | false>
+sponsored: <false | true  # "<the verbatim sponsor mention>">
 topics: [<1-4 kebab-case tags>]
 ---
 
@@ -49,8 +49,10 @@ topics: [<1-4 kebab-case tags>]
 Field rules:
 - **content_type**: `promo` when the video mainly sells something (their course, merch, an app
   launch). `review` covers a product review. Otherwise pick the closest of the rest.
-- **sponsored**: `true` if they mention a sponsor, a paid partnership, `#ad`, or an affiliate
-  code, even briefly.
+- **sponsored**: `true` only when the transcript or description explicitly says so (a sponsor
+  read, "paid partnership", `#ad`, an affiliate code). Put that mention after the value as a
+  comment. Reviewing a product, or a brand sending it, is not sponsorship. Leave the sponsor
+  read's own pitch out of `## Claims`.
 - **topics**: reuse an existing tag when it fits, rather than inventing a near-synonym. Prefer
   a subject over a format: `hook-writing`, not `tips`.
 - `## Claims` is required, even if it holds only one line. If the video truly makes no claim

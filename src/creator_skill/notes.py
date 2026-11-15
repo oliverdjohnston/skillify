@@ -35,7 +35,9 @@ def read_note(path: Path) -> dict:
         for tag in meta.get("topics", "").strip("[]").split(",")
         if tag.strip(" '\"")
     ]
-    meta["promo"] = meta.get("content_type") == "promo" or meta.get("sponsored") == "true"
+    # only promo videos are down-weighted: a sponsored review still holds the creator's real views
+    meta["promo"] = meta.get("content_type") == "promo"
+    meta["sponsored"] = meta.get("sponsored", "").startswith("true")
     return meta
 
 
@@ -95,6 +97,7 @@ def videos_for(base: Path, tags: set[str]) -> list[dict]:
                     "views_total": entry["views_total"],
                     "content_type": note.get("content_type"),
                     "promo": note["promo"],
+                    "sponsored": note["sponsored"],
                     "title": entry.get("title"),
                     "note": f"notes/{entry['key']}.md",
                 }
@@ -142,7 +145,8 @@ def stats(base: Path) -> dict:
         "cross_posts_merged": len(spoken) - len(index),
         "too_short_for_notes": sum(e["words"] < MIN_WORDS for e in index),
         "notes": sum(n["_complete"] for n in notes.values()),
-        "promo_or_sponsored": sum(n["promo"] for n in notes.values()),
+        "promo": sum(n["promo"] for n in notes.values()),
+        "sponsored": sum(n["sponsored"] for n in notes.values()),
         "date_range": [dates[0], dates[-1]] if dates else None,
     }
 
