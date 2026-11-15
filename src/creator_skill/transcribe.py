@@ -10,7 +10,7 @@ from pathlib import Path
 
 DEFAULT_MODEL = os.environ.get("WHISPER_MODEL", "small")
 MLX_REPOS = {"large": "mlx-community/whisper-large-v3-mlx"}
-_lock = threading.Lock()  # Whisper is compute-bound and mlx shares one GPU: one job at a time
+_lock = threading.Lock()  # one Whisper job at a time: it is compute-bound
 
 
 APPLE_SILICON = platform.system() == "Darwin" and platform.machine() == "arm64"
@@ -25,7 +25,7 @@ def backend() -> str:
 
 
 @cache
-def _faster_model(model: str):  # returns faster_whisper.WhisperModel (imported lazily)
+def _faster_model(model: str):
     from faster_whisper import WhisperModel
 
     return WhisperModel(model, compute_type="int8")

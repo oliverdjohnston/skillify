@@ -169,3 +169,28 @@ def test_listing_finishes_before_any_video_is_processed(creators, monkeypatch):
     ingest.PROVIDERS["tiktok"].list_videos = list_videos
     ingest.PROVIDERS["tiktok"].download_audio = download_audio
     assert ingest.ingest("ana")["whisper"] == 3
+
+
+def test_platforms_run_in_parallel(creators, monkeypatch):
+    import threading
+
+    fake_provider(monkeypatch, vids("1", "2"))
+    both_listing = threading.Barrier(2, timeout=5)  # opens only if both platforms list at once
+
+    def provider_for(name):
+        def list_videos(handle, limit, since, creator_dir):
+            both_listing.wait()
+            yield Video(name, "1", f"https://{name}/1")
+
+        return SimpleNamespace(
+            **{**vars(ingest.PROVIDERS["tiktok"]), "NAME": name, "list_videos": list_videos}
+        )
+
+    monkeypatch.setattr(ingest, "PROVIDERS", {n: provider_for(n) for n in ("tiktok", "youtube")})
+    ingest.save_profile("ana", youtube="@ana")
+    counts = ingest.ingest("ana")
+    assert counts["whisper"] == 2
+    assert {p.stem for p in (creators / "ana/transcripts").glob("*.md")} == {
+        "tiktok_1",
+        "youtube_1",
+    }

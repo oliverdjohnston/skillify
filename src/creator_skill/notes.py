@@ -12,7 +12,7 @@ from pathlib import Path
 from .models import read_transcript, split_frontmatter
 from .providers import PROVIDERS
 
-MIN_WORDS = 20  # shorter transcripts ("follow for part 2") carry nothing worth extracting
+MIN_WORDS = 20  # e.g. "follow for part 2"
 
 
 def load_index(base: Path) -> list[dict]:
@@ -33,7 +33,7 @@ def read_note(path: Path) -> dict:
         for tag in meta.get("topics", "").strip("[]").split(",")
         if tag.strip(" '\"")
     ]
-    # only promo videos are down-weighted: a sponsored review still holds the creator's real views
+    # only promo is down-weighted: a sponsored review still holds real views
     meta["promo"] = meta.get("content_type") == "promo"
     meta["sponsored"] = meta.get("sponsored", "").startswith("true")
     return meta
@@ -74,7 +74,7 @@ def topics(base: Path) -> list[dict]:
     for key, note in _notes(base).items():
         entry = index.get(key)
         if not entry:
-            continue  # note for a video that is no longer canonical
+            continue
         for tag in note["topics"]:
             row = rows.setdefault(tag, {"tag": tag, "videos": 0, "promo": 0, "views": 0})
             row["videos"] += 1

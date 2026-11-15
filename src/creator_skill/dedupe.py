@@ -12,8 +12,8 @@ from pathlib import Path
 
 from .models import read_transcript, write_atomic
 
-JACCARD = 0.5  # same audio scores ~0.6-0.9; different videos with a stock intro stay < 0.25
-SHORT_WORDS = 15  # below this, shingles are too few to trust: require an exact match
+JACCARD = 0.5  # same audio scores ~0.6-0.9; different videos < 0.25
+SHORT_WORDS = 15  # below this, require an exact match
 PLATFORM_RANK = {"youtube": 0, "tiktok": 1, "instagram": 2}
 _FILLER = re.compile(r"\b(?:um+|uh+|erm+)\b")
 
@@ -74,7 +74,7 @@ def rebuild(creator_dir: Path) -> list[dict]:
     for path in sorted((creator_dir / "transcripts").glob("*.md")):
         meta, text = read_transcript(path)
         if not meta.get("words"):
-            continue  # silent or music-only video
+            continue
         words = normalise(text).split()
         meta.pop("description", None)
         meta["transcript"] = str(path.relative_to(creator_dir))
@@ -86,7 +86,7 @@ def rebuild(creator_dir: Path) -> list[dict]:
     notes = creator_dir / "notes"
     index = []
     for group in groups:
-        # keep the copy that already has notes, so notes never become orphans
+        # prefer the copy that has notes, so notes never become orphans
         canonical = next((r for r in group if (notes / f"{r['key']}.md").exists()), group[0])
         entry = {k: v for k, v in canonical.items() if not k.startswith("_")}
         entry["views_total"] = sum(r.get("views") or 0 for r in group)

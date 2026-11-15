@@ -6,6 +6,7 @@ A transcript file existing means that video is done, so any run can be interrupt
 import random
 import re
 import tempfile
+import threading
 import time
 from collections import Counter
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
@@ -69,8 +70,8 @@ def process_video(provider: ModuleType, video: Video, out_dir: Path, lang: str, 
             text, used = transcribe.transcribe(provider.download_audio(video, Path(tmp)), model)
         extra = {"source": "whisper", "lang": used, "model": f"{transcribe.backend()}:{model}"}
         if used and used[:2].lower() != lang[:2].lower():
-            # Whisper invents text in random languages on music-only clips, so treat as silent.
-            # shortcut: also drops genuine other-language videos; set the profile's "lang" to match
+            # Whisper invents text in random languages on music-only clips.
+            # shortcut: also drops genuine other-language speech; set the profile's "lang"
             extra["dropped"] = f"Whisper heard '{used}' but the creator speaks '{lang}'"
             text = ""
     write_transcript(out_dir / f"{video.key}.md", video, text, **extra)
@@ -81,8 +82,8 @@ def _job(provider: ModuleType, video: Video, out_dir: Path, lang: str, model: st
     try:
         return process_video(provider, video, out_dir, lang, model)
     finally:
-        video.info = None  # full yt-dlp metadata is large; nothing needs it once written
-        time.sleep(random.uniform(*provider.DELAY))  # every worker keeps the polite pause
+        video.info = None  # large, and no longer needed
+        time.sleep(random.uniform(*provider.DELAY))
 
 
 def _line(video: Video, result: dict) -> str:
@@ -98,9 +99,9 @@ def ingest(
     dry_run: bool = False,
     workers: int = DEFAULT_WORKERS,
 ) -> Counter:
-    """Transcribe everything new for a creator on each platform, then rebuild index.jsonl.
+    """Transcribe everything new for a creator, then rebuild index.jsonl.
 
-    Each platform is listed in full first, then up to `workers` videos are processed at once.
+    Platforms run in parallel; each lists in full, then processes `workers` videos at once.
     """
     profile = load_profile(slug)
     lang = profile.get("lang", "en")
@@ -112,36 +113,38 @@ def ingest(
     state = read_json(state_path, {"failed": {}})
     done = {p.stem for p in out_dir.glob("*.md")}
     counts: Counter = Counter()
+    lock = threading.Lock()  # guards counts, state and state.json across platform threads
 
     def tries(key: str) -> int:
         return state["failed"].get(key, {}).get("tries", 0)
 
-    for name in platforms or list(PROVIDERS):
-        provider, handle = PROVIDERS[name], profile.get(name)
-        if not handle:
-            continue
-        print(f"== {name} {handle}")
-        # List everything before processing: pausing mid-listing let TikTok's page cursor go
-        # stale, which silently ended the listing after ~600 of 2,300 videos.
+    def run(name: str) -> None:
+        provider, handle = PROVIDERS[name], profile[name]
+        # list fully first: a paused listing lets TikTok's page cursor expire and end early
         listed: list[Video] = []
         blocked = None
         try:
             for video in provider.list_videos(handle, limit, since, base):
                 listed.append(video)
-        except ytdlp.Blocked as e:  # still process what was listed before the block
+        except ytdlp.Blocked as e:  # still process what was listed
             blocked = e
-        todo = []
+        todo, skipped = [], Counter()
         for video in listed:
             if video.key in done:
-                counts["already done"] += 1
+                skipped["already done"] += 1
             elif tries(video.key) >= MAX_TRIES:
-                counts["gave up"] += 1
+                skipped["gave up"] += 1
             elif dry_run:
                 print(f"  {video.key}  {video.date or '?'}  {video.title[:60]}")
-                counts["listed"] += 1
+                skipped["listed"] += 1
             else:
                 todo.append(video)
-        print(f"  {len(todo)} to process ({counts['already done']} already done)", flush=True)
+        with lock:
+            counts.update(skipped)
+        print(
+            f"== {name} {handle}: {len(todo)} to process, {skipped['already done']} done",
+            flush=True,
+        )
 
         pending, running, finished = iter(todo), {}, 0
         with ThreadPoolExecutor(workers) as pool:
@@ -152,31 +155,41 @@ def ingest(
                     break
                 for future in wait(running, return_when=FIRST_COMPLETED).done:
                     video, finished = running.pop(future), finished + 1
+                    progress = f"  {name} [{finished}/{len(todo)}]"
                     try:
                         result = future.result()
-                    except ytdlp.Blocked as e:  # finish what's in flight, start nothing new
+                    except ytdlp.Blocked as e:  # finish in-flight work, start nothing new
                         blocked, pending = blocked or e, iter(())
                         continue
                     except Exception as e:
-                        print(f"  [{finished}/{len(todo)}] FAILED {video.key}: {e}", flush=True)
-                        state["failed"][video.key] = {
-                            "error": str(e)[:300],
-                            "tries": tries(video.key) + 1,
-                        }
-                        counts["failed"] += 1
+                        print(f"{progress} FAILED {video.key}: {e}", flush=True)
+                        with lock:
+                            state["failed"][video.key] = {
+                                "error": str(e)[:300],
+                                "tries": tries(video.key) + 1,
+                            }
+                            counts["failed"] += 1
+                            write_json(state_path, state)
                     else:
-                        print(f"  [{finished}/{len(todo)}] {_line(video, result)}", flush=True)
-                        counts[result["source"]] += 1
-                        done.add(video.key)
-                        state["failed"].pop(video.key, None)
-                    write_json(state_path, state)
+                        print(f"{progress} {_line(video, result)}", flush=True)
+                        with lock:
+                            counts[result["source"]] += 1
+                            done.add(video.key)
+                            state["failed"].pop(video.key, None)
+                            write_json(state_path, state)
         if blocked:
-            counts["blocked"] += 1
+            with lock:
+                counts["blocked"] += 1
             print(
                 f"  {name} is refusing requests: {str(blocked)[:200]}\n"
                 "  Progress is saved. Wait a while and rerun (try --workers 1), or rerun with "
                 "--cookies-from-browser firefox (uses your logged-in session)."
             )
+
+    names = [n for n in (platforms or PROVIDERS) if profile.get(n)]
+    with ThreadPoolExecutor(max(1, len(names))) as pool:
+        for future in [pool.submit(run, name) for name in names]:
+            future.result()  # re-raise anything unexpected
     if not dry_run:
         counts["unique videos"] = len(dedupe.rebuild(base))
     return counts

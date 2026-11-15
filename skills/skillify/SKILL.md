@@ -25,8 +25,8 @@ Creator data lives in `creators/` under the current folder.
 |---|---|
 | `ana` | creator slug (if none is given and only one creator exists, use it) |
 | `knowledge`, `voice` or `both` | the mode: skip that question |
-| `--enrich` (or "with web research") | do step 6 |
-| `install to ~/.claude/skills` or a path | the install destination: skip that question |
+| `--enrich` | add labelled web research (step 6); it is off otherwise, so don't ask about it |
+| `install to <path>` | the install destination: skip that question |
 | `all topics` | include every topic cluster without asking |
 
 Ask only for what wasn't given, all together in one message (mode, topics, install location).
@@ -199,10 +199,9 @@ creator-skill check <slug> creators/<slug>/skill/<skill-name>
 Fix everything it reports: unknown keys mean an invented citation, so find the real video or cut
 the point.
 
-Ask where to install; more than one is fine:
-- `~/.claude/skills/`: Claude Code, every project
-- `~/.agents/skills/`: Codex and other agents that read the shared location, every project
-- `<some project>/.agents/skills/` or `.claude/skills/`: one project only
+Ask where to install (more than one is fine): the user's global skills folder for the agent
+they use, so it works in every project, or one project's skills folder. If you don't know your
+own agent's folder, `~/.agents/skills/` is the shared location many agents read.
 
 Copy the whole folder: `cp -R creators/<slug>/skill/<skill-name> <destination>/`.
 

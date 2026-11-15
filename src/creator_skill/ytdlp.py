@@ -36,7 +36,7 @@ class Blocked(Exception):
 
 _cookies: dict = {}
 _local = threading.local()  # YoutubeDL isn't thread-safe: one client per thread
-_generation = 0  # bumped by configure() so every thread rebuilds its client
+_generation = 0  # bumped by configure() to rebuild clients
 
 
 def configure(cookies_from_browser: str | None = None, cookies: Path | None = None) -> None:
@@ -153,7 +153,7 @@ def clean_subtitles(raw: str) -> str:
 
     Cues are sorted by start time: TikTok's caption files list them out of order.
     """
-    cues: list[tuple[float, int, list[str]]] = []  # (start seconds, file order, lines)
+    cues: list[tuple[float, int, list[str]]] = []  # (start, file order, lines)
     for line in raw.splitlines():
         line = line.strip()
         timing = _TIMING.match(line)
@@ -166,7 +166,7 @@ def clean_subtitles(raw: str) -> str:
         text = " ".join(_NOISE.sub(" ", html.unescape(_TAG.sub("", line))).split())
         if text:
             if not cues:
-                cues.append((0.0, 0, []))  # text before any timing line
+                cues.append((0.0, 0, []))
             cues[-1][2].append(text)
     kept: list[str] = []
     for _, _, lines in sorted(cues):
@@ -187,7 +187,7 @@ def captions(video: Video, lang: str = "en") -> tuple[str, str] | None:
     if raw is None:
         try:  # fetch now: TikTok caption URLs are signed and expire
             raw = _ydl().urlopen(track["url"]).read().decode("utf-8", "replace")
-        except Exception as e:  # a failed caption fetch just means falling back to Whisper
+        except Exception as e:  # fall back to Whisper
             _raise_if_blocked(e)
             return None
     text = clean_subtitles(raw)

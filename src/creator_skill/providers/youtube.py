@@ -10,7 +10,7 @@ from ..models import Video
 NAME = "youtube"
 DOMAINS = ("youtube.com", "youtu.be")
 DELAY = (2.0, 5.0)
-TABS = ("shorts", "videos")  # the bare channel URL returns nested tabs, so list each one
+TABS = ("shorts", "videos")
 
 
 def channel_url(handle: str) -> str:
@@ -28,7 +28,7 @@ def list_videos(
         try:
             yield from ytdlp.window(ytdlp.list_entries(f"{base}/{tab}", NAME), limit, since)
         except ytdlp.DownloadError as e:
-            if "does not have a" not in str(e):  # e.g. "This channel does not have a shorts tab"
+            if "does not have a" not in str(e):  # "...does not have a shorts tab"
                 raise
 
 

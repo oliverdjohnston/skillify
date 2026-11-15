@@ -13,7 +13,7 @@ from . import transcribe
 
 YT_DLP_MAX_AGE_DAYS = 45  # YouTube/TikTok break old yt-dlp releases within weeks
 TOOL_SPEC = "creator-skill[mac] @ git+https://github.com/oliverdjohnston/skillify"
-IN_UV_TOOL = (Path(sys.prefix) / "uv-receipt.toml").exists()  # installed with `uv tool install`
+IN_UV_TOOL = (Path(sys.prefix) / "uv-receipt.toml").exists()
 
 
 def _install(args: str) -> str:
@@ -49,7 +49,7 @@ def check() -> list[tuple[str, str, str | None]]:
         tip = None
         if transcribe.APPLE_SILICON and not importlib.util.find_spec("mlx_whisper"):
             tip = _install('-e ".[mac]"') + "  # optional: much faster on Apple Silicon"
-        elif transcribe.APPLE_SILICON:  # mlx-whisper is installed but needs the ffmpeg binary
+        elif transcribe.APPLE_SILICON:
             tip = "brew install ffmpeg  # optional: turns on mlx-whisper (faster)"
         results.append(("warn" if tip else "ok", "Whisper backend: faster-whisper (CPU)", tip))
     return results
