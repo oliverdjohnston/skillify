@@ -35,7 +35,7 @@ instagram_urls.txt      Reel URLs (yt-dlp can't list Instagram profiles)
 state.json              failures only; a video is skipped after 3 tries
 transcripts/<platform>_<id>.md   JSON-valued frontmatter + text; the file existing = done
 index.jsonl             one line per unique video (cross-posts merged), rebuilt from transcripts
-notes/<key>.md          agent-written, see .agents/skills/ingest/note-template.md
+notes/<key>.md          agent-written, see skills/ingest/note-template.md
 skill/<name>/           generated skill before installation
 ```
 
@@ -52,7 +52,8 @@ Code in `src/creator_skill/` (one job per module):
 | `models.py` | `Video`, transcript read/write, atomic writes |
 | `cli.py`, `doctor.py` | the `creator-skill` command and environment check |
 
-Project skills live in `.agents/skills/` (`.claude/skills` is a symlink to it): `start`,
+Project skills live in `skills/`, the layout `npx skills add oliverdjohnston/skillify` installs
+from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks to it: `start`,
 `creator`, `ingest`, `transcribe`, `skillify`.
 
 ## Decisions (and why)
@@ -70,6 +71,9 @@ Project skills live in `.agents/skills/` (`.claude/skills` is a symlink to it): 
   when yt-dlp fixes it.
 - **YouTube needs deno + yt-dlp-ejs** (installed with the `yt-dlp[default,deno]` extra) for
   downloads. Captions mostly work without them.
+- **Installed skills find the tool themselves**: the repo's `.venv`, else `creator-skill` on the
+  PATH, else a one-time `uv tool install "creator-skill[mac] @ git+https://github.com/oliverdjohnston/skillify"`.
+  ffmpeg is optional (only mlx-whisper needs it), so uv is the only prerequisite.
 - **Notes and synthesis are done by the agent, not an API key.** Python stays deterministic and
   cheap. The agent does the judgement.
 - **Faithfulness over helpfulness** in notes and skills. Web research only with `--enrich`, and

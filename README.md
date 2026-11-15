@@ -19,27 +19,32 @@ and writing.
    how well those videos did, prefers the newer view when the creator changed their mind, and
    writes a skill folder you can install.
 
-## Quick start
+## Install
 
-You need Python 3.11+ and ffmpeg (`brew install ffmpeg`, `sudo apt install ffmpeg`, or
-`winget install ffmpeg`).
+**Into your agent, no clone** (Claude Code, Codex and others that read skills):
 
 ```bash
-git clone https://github.com/grandamenium/short-form-video-transcriber.git
-cd short-form-video-transcriber
-uv venv -p 3.12 .venv && uv pip install -p .venv -e ".[dev]"   # Apple Silicon: ".[dev,mac]"
-source .venv/bin/activate                                      # Windows: .venv\Scripts\activate
-creator-skill doctor                                           # prints a fix for anything missing
+npx skills add oliverdjohnston/skillify
+```
+
+Then, in any folder, run `/creator https://www.tiktok.com/@theirhandle`. The first time, the
+skill offers to install the `creator-skill` tool for you with
+[uv](https://docs.astral.sh/uv/), installing uv itself too if needed. Nothing else is required:
+ffmpeg is optional and only speeds up transcription on Apple Silicon.
+
+**Or clone it** (to change the code, or to use it without an agent):
+
+```bash
+git clone https://github.com/oliverdjohnston/skillify.git && cd skillify
+uv venv -p 3.12 .venv && uv pip install -p .venv -e ".[dev,mac]"
+.venv/bin/creator-skill doctor      # prints a fix for anything missing
 ```
 
 No uv? Use `python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"` instead.
 
-Then open the folder in your agent and ask it to **"run the start skill"**, or follow the steps
-below yourself.
-
 ## Make a skill from a TikTok account
 
-In your agent, from this folder (in Claude Code, skills are slash commands):
+In your agent (in Claude Code, skills are slash commands):
 
 ```
 /creator https://www.tiktok.com/@theirhandle
@@ -124,7 +129,6 @@ Check a generated skill: `creator-skill check <slug> creators/<slug>/skill/<skil
 ## Troubleshooting
 
 - **`creator-skill doctor` fails**: run the `fix:` command it prints, then rerun it.
-- **ffmpeg not found**: install it with the commands in Quick start.
 - **"<platform> is refusing requests"**: you've been rate limited or hit a bot check. Progress
   is saved. Wait an hour and rerun the same command, or add `--cookies-from-browser firefox`.
   The tool doesn't try to get around platform limits.
@@ -135,8 +139,8 @@ Check a generated skill: `creator-skill check <slug> creators/<slug>/skill/<skil
   handful of Reels.
 - **YouTube downloads fail but captions work**: YouTube needs deno and yt-dlp-ejs; doctor checks
   for them. Upgrade yt-dlp first: `uv pip install -U "yt-dlp[default,deno]"`.
-- **Slow transcription**: on Apple Silicon install the `mac` extra (mlx-whisper), or use
-  `--model tiny`. Videos with platform captions skip Whisper entirely.
+- **Slow transcription**: on Apple Silicon, install ffmpeg (`brew install ffmpeg`) and the `mac`
+  extra to switch to mlx-whisper, or use `--model tiny`. Videos with platform captions skip Whisper entirely.
 - **Something stopped working on one platform**: platforms change often. Upgrade yt-dlp first.
 
 ## Development

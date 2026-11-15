@@ -12,8 +12,12 @@ Two stages, both resumable: rerunning only does what is missing.
 
 ## Before you start
 
-If `.venv/bin/creator-skill` doesn't exist (Windows: `.venv\Scripts\creator-skill.exe`), do the
-`start` skill's setup first, then come back.
+Find the `creator-skill` command and use it for every command below:
+1. Inside the skillify repo: `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
+2. Otherwise `creator-skill` on the PATH, or `~/.local/bin/creator-skill`.
+3. Neither works: install it with the `start` skill (one command), then come back.
+
+Creator data lives in `creators/` under the current folder.
 
 ## Read the arguments
 
@@ -33,7 +37,7 @@ else that has a default.
 ## Stage 1: transcripts
 
 ```bash
-.venv/bin/creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
+creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
 ```
 
 - It first lists the whole profile (a few minutes for a 2,000-video account), then handles 4
@@ -53,7 +57,7 @@ that lists every URL.
 ## Stage 2: notes
 
 ```bash
-.venv/bin/creator-skill notes-todo <slug>
+creator-skill notes-todo <slug>
 ```
 
 This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete
@@ -62,10 +66,10 @@ note yet, packed so each batch is about 15k transcript words. Videos under 20 wo
 For each batch, give this task to a sub-agent if you can run them, at most 4 in parallel. If you
 can't, work through the batches yourself one at a time.
 
-> Read `.agents/skills/ingest/note-template.md` and follow it exactly. For each key in
+> Read `<absolute path of note-template.md in this skill's folder>` and follow it exactly. For each key in
 > `<batch>`, read `creators/<slug>/transcripts/<key>.md` and write
 > `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse them where they fit):
-> `<output of: .venv/bin/creator-skill topics <slug>>`. Read nothing else. Reply only with the keys you
+> `<output of: creator-skill topics <slug>>`. Read nothing else. Reply only with the keys you
 > wrote and any you skipped, with the reason.
 
 When a round finishes, run `notes-todo` again and repeat until `remaining` is 0. A note without
@@ -77,7 +81,7 @@ within your context.
 ## Report
 
 ```bash
-.venv/bin/creator-skill stats <slug>
+creator-skill stats <slug>
 ```
 
 Tell the user:

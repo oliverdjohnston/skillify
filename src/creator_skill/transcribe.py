@@ -3,6 +3,7 @@
 import importlib.util
 import os
 import platform
+import shutil
 import threading
 from functools import cache
 from pathlib import Path
@@ -15,7 +16,8 @@ _lock = threading.Lock()  # Whisper is compute-bound and mlx shares one GPU: one
 def backend() -> str:
     """Name of the Whisper backend that will be used."""
     apple_silicon = platform.system() == "Darwin" and platform.machine() == "arm64"
-    if apple_silicon and importlib.util.find_spec("mlx_whisper"):
+    # mlx-whisper decodes audio with the ffmpeg binary; faster-whisper needs nothing extra
+    if apple_silicon and importlib.util.find_spec("mlx_whisper") and shutil.which("ffmpeg"):
         return "mlx-whisper"
     return "faster-whisper"
 

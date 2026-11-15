@@ -14,8 +14,12 @@ happens only with `--enrich`, and its results go in separately labelled sections
 
 ## Before you start
 
-If `.venv/bin/creator-skill` doesn't exist (Windows: `.venv\Scripts\creator-skill.exe`), do the
-`start` skill's setup first, then come back.
+Find the `creator-skill` command and use it for every command below:
+1. Inside the skillify repo: `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
+2. Otherwise `creator-skill` on the PATH, or `~/.local/bin/creator-skill`.
+3. Neither works: install it with the `start` skill (one command), then come back.
+
+Creator data lives in `creators/` under the current folder.
 
 ## Read the arguments
 
@@ -32,8 +36,8 @@ Ask only for what wasn't given, all together in one message (mode, topics, insta
 ## 0. Preconditions
 
 ```bash
-.venv/bin/creator-skill stats <slug>
-.venv/bin/creator-skill notes-todo <slug>
+creator-skill stats <slug>
+creator-skill notes-todo <slug>
 ```
 
 If `remaining` is above 0, finish the notes first (stage 2 of the `ingest` skill), or ask the
@@ -45,7 +49,7 @@ user whether to go ahead with partial notes.
    - **knowledge**: their methods, frameworks and rules of thumb
    - **voice**: write scripts and posts the way they talk
    - **both**
-2. **Topics**: run `.venv/bin/creator-skill topics <slug>`. Merge synonymous or overlapping tags into 3–15
+2. **Topics**: run `creator-skill topics <slug>`. Merge synonymous or overlapping tags into 3–15
    clusters (e.g. `hooks` + `hook-writing` + `openers` → *Hooks*), and drop tags with only promo
    videos. Show the clusters with their video counts and let the user pick (all by default).
 3. **Skill name**: suggest one that says what it does, e.g. `<slug>-video-strategy` (knowledge)
@@ -58,7 +62,7 @@ Work in `creators/<slug>/skill/<skill-name>/`.
 For each cluster:
 
 ```bash
-.venv/bin/creator-skill topics <slug> --tags tag-a,tag-b,tag-c
+creator-skill topics <slug> --tags tag-a,tag-b,tag-c
 ```
 
 That lists the cluster's videos (key, date, views, content type, promo and sponsored flags, note path), newest
@@ -129,7 +133,7 @@ Write `references/voice.md`:
 ## 4. Sources
 
 ```bash
-.venv/bin/creator-skill sources <slug> --out creators/<slug>/skill/<skill-name>/references/sources.md
+creator-skill sources <slug> --out creators/<slug>/skill/<skill-name>/references/sources.md
 ```
 
 This lists every noted video with its date, views, type and the links on every platform.
@@ -191,7 +195,7 @@ add one line under References saying that external context exists and where.
 ## 7. Check, install, report
 
 ```bash
-.venv/bin/creator-skill check <slug> creators/<slug>/skill/<skill-name>
+creator-skill check <slug> creators/<slug>/skill/<skill-name>
 ```
 
 Fix everything it reports: unknown keys mean an invented citation, so find the real video or cut

@@ -37,7 +37,13 @@ SYSTEM_FIXES = {
 }
 
 
+TOOL_SPEC = "creator-skill[mac] @ git+https://github.com/oliverdjohnston/skillify"
+IN_UV_TOOL = (Path(sys.prefix) / "uv-receipt.toml").exists()  # installed with `uv tool install`
+
+
 def _pip(args: str) -> str:
+    if IN_UV_TOOL:
+        return f'uv tool install --force "{TOOL_SPEC}"'
     return f"uv pip install {args}" if shutil.which("uv") else f"python -m pip install {args}"
 
 
@@ -52,20 +58,15 @@ def check() -> list[tuple[str, str, str | None]]:
     else:
         results.append(("fail", f"Python {py} (need 3.11+)", SYSTEM_FIXES["python"].get(os_name)))
 
-    ffmpeg = shutil.which("ffmpeg")
-    if ffmpeg:
-        results.append(("ok", f"ffmpeg at {ffmpeg}", None))
-    else:
-        results.append(("fail", "ffmpeg not found", SYSTEM_FIXES["ffmpeg"].get(os_name)))
-
     try:
         from yt_dlp.version import __version__ as ytv
 
         age = (date.today() - date(*map(int, ytv.split(".")[:3]))).days
         if age > YT_DLP_MAX_AGE_DAYS:
-            results.append(
-                ("warn", f"yt-dlp {ytv} is {age} days old", _pip('-U "yt-dlp[default,deno]"'))
+            fix = (
+                "uv tool upgrade creator-skill" if IN_UV_TOOL else _pip('-U "yt-dlp[default,deno]"')
             )
+            results.append(("warn", f"yt-dlp {ytv} is {age} days old", fix))
         else:
             results.append(("ok", f"yt-dlp {ytv}", None))
     except ImportError:
@@ -84,13 +85,18 @@ def check() -> list[tuple[str, str, str | None]]:
             )
         )
 
+    # same rule as transcribe.backend(): mlx-whisper needs Apple Silicon and the ffmpeg binary
     apple_silicon = platform.system() == "Darwin" and platform.machine() == "arm64"
     has_mlx = importlib.util.find_spec("mlx_whisper") is not None
-    if has_mlx and apple_silicon:
+    if apple_silicon and has_mlx and shutil.which("ffmpeg"):
         results.append(("ok", "Whisper backend: mlx-whisper (Apple Silicon GPU)", None))
     elif importlib.util.find_spec("faster_whisper"):
-        tip = _pip('-e ".[mac]"') + "  # optional, much faster" if apple_silicon else None
-        results.append(("ok" if not tip else "warn", "Whisper backend: faster-whisper (CPU)", tip))
+        tip = None
+        if apple_silicon and not has_mlx:
+            tip = _pip('-e ".[mac]"') + "  # optional: much faster on Apple Silicon"
+        elif apple_silicon:
+            tip = SYSTEM_FIXES["ffmpeg"]["macOS"] + "  # optional: turns on mlx-whisper (faster)"
+        results.append(("warn" if tip else "ok", "Whisper backend: faster-whisper (CPU)", tip))
     else:
         results.append(("fail", "no Whisper backend installed", _pip("-e .")))
     return results

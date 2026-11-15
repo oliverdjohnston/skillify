@@ -7,9 +7,13 @@ description: Add a creator from their TikTok, YouTube or Instagram handles or pr
 
 ## Before you start
 
-If `.venv/bin/creator-skill` doesn't exist (Windows: `.venv\Scripts\creator-skill.exe`), do the
-`start` skill's setup first, then come back. No account or sign-in is needed for public TikTok and
-YouTube profiles.
+Find the `creator-skill` command and use it for every command below:
+1. Inside the skillify repo: `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
+2. Otherwise `creator-skill` on the PATH, or `~/.local/bin/creator-skill`.
+3. Neither works: install it with the `start` skill (one command), then come back.
+
+Creator data lives in `creators/` under the current folder. No account or sign-in is needed for
+public TikTok and YouTube profiles.
 
 ## Read the arguments
 
@@ -35,8 +39,8 @@ for what is genuinely missing:
 ## Add or edit
 
 ```bash
-.venv/bin/creator-skill creator add <slug> --name "<name>" [--tiktok @x] [--youtube @x] [--instagram x] [--lang en]
-.venv/bin/creator-skill ingest <slug> --dry-run --limit 1
+creator-skill creator add <slug> --name "<name>" [--tiktok @x] [--youtube @x] [--instagram x] [--lang en]
+creator-skill ingest <slug> --dry-run --limit 1
 ```
 
 The dry run lists one video per platform without downloading anything. If a platform lists
@@ -64,7 +68,7 @@ in that browser. It uses their own session; nothing is stored here.
 ## List
 
 ```bash
-.venv/bin/creator-skill creator list
+creator-skill creator list
 ```
 
 An old `accounts.json` from earlier versions is migrated into profiles automatically.
