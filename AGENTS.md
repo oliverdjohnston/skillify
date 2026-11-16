@@ -117,6 +117,15 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 
 ## Known gaps
 
-- Instagram hasn't been tested live in this repo yet (it needs real Reel URLs and cookies).
+- Instagram hasn't been tested live in this repo yet. As of November 2026 yt-dlp's profile
+  extractor is still broken (#4394; the fix PR #14963 was closed), and single Reels need the
+  user's browser cookies, because logged-out extraction now needs impersonation. gallery-dl
+  can list `/<user>/reels/` with cookies (GPL-2.0, so call it as a subprocess); it was offered
+  and declined for now.
+- Other sources researched in November 2026, all declined for now: podcasts by RSS (best value,
+  free, no login), Substack/Ghost/WordPress archives (would need a text path that skips
+  transcription), Bluesky's public API, and Twitch/Kick VODs (yt-dlp lists them). X, LinkedIn,
+  Threads and Facebook can't list a profile without a paid API or private-API scraping, so at
+  most they could work from a URL list like Instagram.
 - TikTok caption keys use ISO 639-2 (`eng-US`); `LANG3` in `ytdlp.py` maps only a few languages.
   Extend it when a creator speaks another one.
