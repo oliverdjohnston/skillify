@@ -20,21 +20,56 @@ agent does the reading and writing.
    how well those videos did, takes the newer view when the creator changed their mind, and
    writes a skill folder you can install.
 
-## Install
+## Quick start
 
-Into your agent, without cloning (Claude Code, Codex and others that read skills):
+1. **Install the skills** once, for every folder:
+
+   ```bash
+   npx skills add oliverdjohnston/understudy -g
+   ```
+
+   Pick your agent when it asks (Claude Code, Codex and so on). `npx skills ls -g` should now list
+   `start`, `creator`, `ingest`, `transcribe` and `understudy`. Restart your agent so it loads
+   them. Leave off `-g` to install into the current project only.
+
+2. **Set up the tool.** In your agent, run `/start`. It installs the `understudy` command with
+   [uv](https://docs.astral.sh/uv/) (and uv itself if it's missing; uv also fetches Python), runs
+   `understudy doctor` and explains the steps. It asks before it installs anything.
+
+3. **Add a creator.** Open your agent in the folder where you want the data kept (everything goes
+   in `creators/` there), then:
+
+   ```
+   /creator https://www.tiktok.com/@theirhandle "Their Name"
+   ```
+
+   Add their YouTube and Instagram links in the same line if they have them.
+
+4. **Transcribe and take notes.** `/creator` offers this, or run `/ingest <slug> 20` for a quick
+   test and `/ingest <slug> all` for everything.
+
+5. **Build the skill.** `/understudy <slug> both` asks which topics to include and where to
+   install the result. After that, the new skill (for example `<slug>-voice`) works like any
+   other.
+
+In Claude Code, skills are slash commands. In other agents, ask for the skill by name ("use the
+start skill").
+
+**Updating:**
 
 ```bash
-npx skills add oliverdjohnston/understudy -g
+npx skills update -g           # the skills
+uv tool upgrade understudy     # the command-line tool
 ```
 
-`-g` installs the skills for your user, so they work in every folder (leave it off to install into
-the current project only). Then, in any folder, run `/creator https://www.tiktok.com/@theirhandle`.
-The first time, the skill offers to install the `understudy` tool with
-[uv](https://docs.astral.sh/uv/), and installs uv too if you don't have it. uv also fetches Python,
-so there's nothing else to set up.
+**Coming from skillify?** The project was renamed. Remove the old pieces, then follow step 1:
 
-Or clone it, to change the code or use it without an agent:
+```bash
+npx skills remove -g skillify
+uv tool uninstall creator-skill
+```
+
+### Working on the code
 
 ```bash
 git clone https://github.com/oliverdjohnston/understudy.git && cd understudy
@@ -62,7 +97,7 @@ skill, asking only for what it can't work out. Each skill also takes its options
 | `/understudy ana both` · `/understudy ana voice --enrich` | build the skill |
 | `/transcribe <video URLs>` | one-off videos |
 
-Each skill sets up the Python tool itself if needed, so `/start` is optional.
+Any skill sets up the `understudy` tool itself if it's missing, so skipping `/start` is fine.
 
 You don't need an account for public TikTok and YouTube profiles. Instagram, and age-restricted
 YouTube videos, use the cookies from a browser where you're logged in:
