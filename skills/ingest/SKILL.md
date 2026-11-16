@@ -1,6 +1,6 @@
 ---
 name: ingest
-description: Transcribe every video a creator has posted on TikTok, YouTube and Instagram, merge cross-posts, and extract structured notes from each one. Use when the user wants to process or update a creator's whole account, before turning it into a skill. Usage: ingest <slug> [all | N | since YYYY-MM-DD] [tiktok|youtube|instagram] [notes-only].
+description: 'Transcribe every video a creator has posted on TikTok, YouTube and Instagram, merge cross-posts, and extract structured notes from each one. Use when the user wants to process or update a creator''s whole account, before turning it into a skill. Usage: ingest <slug> [all | N | since YYYY-MM-DD] [tiktok|youtube|instagram] [notes-only].'
 ---
 
 # Ingest a creator
@@ -12,7 +12,7 @@ Two stages, both resumable: rerunning only does what is missing.
 
 ## Before you start
 
-Use `.venv/bin/creator-skill` inside the understudy repo, otherwise `creator-skill` on the PATH. If
+Use `.venv/bin/understudy` inside the understudy repo, otherwise `understudy` on the PATH. If
 neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder.
@@ -36,7 +36,7 @@ else that has a default.
 ## Stage 1: transcripts
 
 ```bash
-creator-skill ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
+understudy ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
 ```
 
 - It first lists the whole profile (a few minutes for a 2,000-video account), then handles 4
@@ -57,14 +57,14 @@ that lists every URL.
 ## Stage 2: notes
 
 ```bash
-creator-skill notes-todo <slug>
+understudy notes-todo <slug>
 ```
 
 Notes are the expensive step: roughly 100k tokens per batch (about 1,300 per short video). If your agent lets you choose the
 sub-agents' model, a smaller one handles short videos about as well, but in testing it caught
 only a third of the claims in long interviews, so prefer a capable model for long videos. If the creator has many long videos
 (podcasts, streams), say how many batches there are and offer to note only the most-viewed long
-ones: `creator-skill notes-todo <slug> --long-top 150` keeps every short video plus the 150
+ones: `understudy notes-todo <slug> --long-top 150` keeps every short video plus the 150
 most-viewed videos over 3 minutes.
 
 This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete
@@ -78,7 +78,7 @@ can't, work through the batches yourself one at a time.
 > `<batch>`, read `creators/<slug>/transcripts/<key>.md` and write
 > `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse one where it fits; otherwise make a
 > new kebab-case tag; never leave a video with speech untagged):
-> `<output of: creator-skill topics <slug>>`. Write each note yourself (scripts only to check
+> `<output of: understudy topics <slug>>`. Write each note yourself (scripts only to check
 > quotes), and keep any helper files in your own new folder. Read nothing else. Reply only with the keys you
 > wrote and any you skipped, with the reason.
 
@@ -91,7 +91,7 @@ within your context.
 ## Report
 
 ```bash
-creator-skill stats <slug>
+understudy stats <slug>
 ```
 
 Tell the user:

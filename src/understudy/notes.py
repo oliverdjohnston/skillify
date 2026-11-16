@@ -209,7 +209,7 @@ def check_skill(base: Path, skill_dir: Path) -> list[str]:
     if lines > MAX_SKILL_LINES:
         problems.append(f"SKILL.md has {lines} lines (keep it under {MAX_SKILL_LINES})")
     if not (skill_dir / "references" / "sources.md").exists():
-        problems.append("references/sources.md is missing (run: creator-skill sources)")
+        problems.append("references/sources.md is missing (run: understudy sources)")
     known = {c["key"] for e in load_index(base) for c in e["copies"]}
     for path in sorted(skill_dir.rglob("*.md")):
         if path.name == "sources.md":

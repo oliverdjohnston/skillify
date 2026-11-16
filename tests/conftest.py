@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from creator_skill import ytdlp
-from creator_skill.models import Video, write_transcript
+from understudy import ytdlp
+from understudy.models import Video, write_transcript
 
 
 class FakeYDL:

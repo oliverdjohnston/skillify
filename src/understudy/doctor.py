@@ -12,7 +12,7 @@ from yt_dlp.version import __version__ as YT_DLP_VERSION
 from . import transcribe
 
 YT_DLP_MAX_AGE_DAYS = 45  # YouTube/TikTok break old yt-dlp releases within weeks
-TOOL_SPEC = "creator-skill[mac] @ git+https://github.com/oliverdjohnston/understudy"
+TOOL_SPEC = "understudy[mac] @ git+https://github.com/oliverdjohnston/understudy"
 IN_UV_TOOL = (Path(sys.prefix) / "uv-receipt.toml").exists()
 
 
@@ -29,9 +29,7 @@ def check() -> list[tuple[str, str, str | None]]:
 
     age = (date.today() - date(*map(int, YT_DLP_VERSION.split(".")[:3]))).days
     if age > YT_DLP_MAX_AGE_DAYS:
-        fix = (
-            "uv tool upgrade creator-skill" if IN_UV_TOOL else _install('-U "yt-dlp[default,deno]"')
-        )
+        fix = "uv tool upgrade understudy" if IN_UV_TOOL else _install('-U "yt-dlp[default,deno]"')
         results.append(("warn", f"yt-dlp {YT_DLP_VERSION} is {age} days old", fix))
     else:
         results.append(("ok", f"yt-dlp {YT_DLP_VERSION}", None))
@@ -64,5 +62,5 @@ def main() -> int:
         if fix:
             print(f"         fix: {fix}")
         failed = failed or status == "fail"
-    print("\nAll good." if not failed else "\nFix the items above, then run: creator-skill doctor")
+    print("\nAll good." if not failed else "\nFix the items above, then run: understudy doctor")
     return int(failed)

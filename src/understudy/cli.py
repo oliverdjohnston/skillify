@@ -1,4 +1,4 @@
-"""Command-line interface: creator-skill <command>."""
+"""Command-line interface: understudy <command>."""
 
 import argparse
 import json
@@ -17,7 +17,7 @@ def _date(value: str) -> str:
 
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="creator-skill",
+        prog="understudy",
         description="Turn a creator's TikTok, YouTube and Instagram videos into transcripts, "
         "notes and an agent skill.",
     )

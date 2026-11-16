@@ -1,13 +1,13 @@
 ---
 name: creator
-description: Add a creator from their TikTok, YouTube or Instagram handles or profile links, check the accounts resolve, then offer to transcribe them and build their skill. Also lists and edits creators. Use when the user gives a creator's handle or profile URL, or asks to add, change or list creators. Usage: creator <profile URL or @handle> [more URLs] ["Display Name"], creator list, creator edit <slug> ...
+description: 'Add a creator from their TikTok, YouTube or Instagram handles or profile links, check the accounts resolve, then offer to transcribe them and build their skill. Also lists and edits creators. Use when the user gives a creator''s handle or profile URL, or asks to add, change or list creators. Usage: creator <profile URL or @handle> [more URLs] ["Display Name"], creator list, creator edit <slug> ...'
 ---
 
 # Creator
 
 ## Before you start
 
-Use `.venv/bin/creator-skill` inside the understudy repo, otherwise `creator-skill` on the PATH. If
+Use `.venv/bin/understudy` inside the understudy repo, otherwise `understudy` on the PATH. If
 neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder. No account or sign-in is needed for
@@ -40,8 +40,8 @@ for what is genuinely missing:
 ## Add or edit
 
 ```bash
-creator-skill creator add <slug> --name "<name>" [--tiktok @x] [--youtube @x] [--instagram x] [--lang en]
-creator-skill ingest <slug> --dry-run --limit 1
+understudy creator add <slug> --name "<name>" [--tiktok @x] [--youtube @x] [--instagram x] [--lang en]
+understudy ingest <slug> --dry-run --limit 1
 ```
 
 The dry run lists one video per platform without downloading anything. If a platform lists
@@ -70,7 +70,7 @@ in that browser. It uses their own session; nothing is stored here.
 ## List
 
 ```bash
-creator-skill creator list
+understudy creator list
 ```
 
 An old `accounts.json` from earlier versions is migrated into profiles automatically.

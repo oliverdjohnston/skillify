@@ -2,9 +2,9 @@
 
 import pytest
 
-from creator_skill import ytdlp
-from creator_skill.models import Video
-from creator_skill.providers import PROVIDERS, for_url, instagram, tiktok, youtube
+from understudy import ytdlp
+from understudy.models import Video
+from understudy.providers import PROVIDERS, for_url, instagram, tiktok, youtube
 
 
 @pytest.fixture

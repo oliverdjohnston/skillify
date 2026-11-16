@@ -1,6 +1,6 @@
 ---
 name: understudy
-description: Turn a creator's whole ingested output into one agent skill built from what they actually say, covering their methods and frameworks, their voice for writing scripts the way they talk, or both. Use when the user wants a skill, playbook or style guide from a creator who has been ingested. Usage: understudy <slug> [knowledge|voice|both] [--enrich] [install to <path>].
+description: 'Turn a creator''s whole ingested output into one agent skill built from what they actually say, covering their methods and frameworks, their voice for writing scripts the way they talk, or both. Use when the user wants a skill, playbook or style guide from a creator who has been ingested. Usage: /understudy <slug> [knowledge|voice|both] [--enrich] [install to <path>].'
 ---
 
 # Build a creator's understudy
@@ -15,7 +15,7 @@ happens only with `--enrich`, and its results go in separately labelled sections
 
 ## Before you start
 
-Use `.venv/bin/creator-skill` inside the understudy repo, otherwise `creator-skill` on the PATH. If
+Use `.venv/bin/understudy` inside the understudy repo, otherwise `understudy` on the PATH. If
 neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder.
@@ -36,8 +36,8 @@ Ask only for what wasn't given, all together in one message (mode, topics, insta
 ## 0. Preconditions
 
 ```bash
-creator-skill stats <slug>
-creator-skill notes-todo <slug>
+understudy stats <slug>
+understudy notes-todo <slug>
 ```
 
 If `remaining` is above 0, finish the notes first (stage 2 of the `ingest` skill), or ask the
@@ -49,7 +49,7 @@ user whether to go ahead with partial notes.
    - **knowledge**: their methods, frameworks and rules of thumb
    - **voice**: write scripts and posts the way they talk
    - **both**
-2. **Topics**: run `creator-skill topics <slug>`. Merge synonymous or overlapping tags into 3–15
+2. **Topics**: run `understudy topics <slug>`. Merge synonymous or overlapping tags into 3–15
    clusters (e.g. `hooks` + `hook-writing` + `openers` → *Hooks*), and drop tags with only promo
    videos. Show the clusters with their video counts and let the user pick (all by default).
 3. **Skill name**: suggest one that says what it does, e.g. `<slug>-video-strategy` (knowledge)
@@ -62,7 +62,7 @@ Work in `creators/<slug>/skill/<skill-name>/`.
 For each cluster:
 
 ```bash
-creator-skill topics <slug> --tags tag-a,tag-b,tag-c
+understudy topics <slug> --tags tag-a,tag-b,tag-c
 ```
 
 That lists the cluster's videos (key, date, views, content type, promo and sponsored flags, note path), newest
@@ -133,7 +133,7 @@ Write `references/voice.md`:
 ## 4. Sources
 
 ```bash
-creator-skill sources <slug> --out creators/<slug>/skill/<skill-name>/references/sources.md
+understudy sources <slug> --out creators/<slug>/skill/<skill-name>/references/sources.md
 ```
 
 This lists every noted video with its date, views, type and the links on every platform.
@@ -195,7 +195,7 @@ add one line under References saying that external context exists and where.
 ## 7. Check, install, report
 
 ```bash
-creator-skill check <slug> creators/<slug>/skill/<skill-name>
+understudy check <slug> creators/<slug>/skill/<skill-name>
 ```
 
 Fix everything it reports: unknown keys mean an invented citation, so find the real video or cut

@@ -30,7 +30,7 @@ def creator_dir(slug: str) -> Path:
 def load_profile(slug: str) -> dict:
     path = creator_dir(slug) / "profile.json"
     if not path.exists():
-        raise SystemExit(f"No creator '{slug}'. Add one with: creator-skill creator add {slug} ...")
+        raise SystemExit(f"No creator '{slug}'. Add one with: understudy creator add {slug} ...")
     return read_json(path, {})
 
 

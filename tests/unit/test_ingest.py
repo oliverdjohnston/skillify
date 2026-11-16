@@ -5,8 +5,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from creator_skill import ingest, transcribe, ytdlp
-from creator_skill.models import Video, read_transcript
+from understudy import ingest, transcribe, ytdlp
+from understudy.models import Video, read_transcript
 
 
 @pytest.fixture

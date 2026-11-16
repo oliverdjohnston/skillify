@@ -1,34 +1,34 @@
 ---
 name: start
-description: Install or set up Understudy's creator-skill tool (via uv), check it works, and explain how to turn a creator's videos into a skill. Use when someone first uses these skills, asks how they work, or a command fails because creator-skill isn't installed.
+description: 'Install or set up Understudy''s command-line tool, `understudy` (via uv), check it works, and explain how to turn a creator''s videos into a skill. Use when someone first uses these skills, asks how they work, or an `understudy` command fails because the tool isn''t installed.'
 ---
 
 # Start
 
 Understudy turns everything a creator says on TikTok, YouTube and Instagram into one agent skill
-built from their own words. The skills drive a small command-line tool, `creator-skill`.
+built from their own words. The skills drive a small command-line tool, `understudy`.
 
 ## 1. Get the tool
 
-**Inside the understudy repo** (it has `pyproject.toml` and `src/creator_skill/`): make a local
+**Inside the understudy repo** (it has `pyproject.toml` and `src/understudy/`): make a local
 environment.
 
 ```bash
 uv venv -p 3.12 .venv && uv pip install -p .venv -e ".[dev,mac]"
 ```
 
-The tool is then `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
+The tool is then `.venv/bin/understudy` (Windows: `.venv\Scripts\understudy.exe`).
 
-**Anywhere else** (the skills were installed with `npx skills add oliverdjohnston/understudy`):
+**Anywhere else** (the skills were installed with `npx skills add oliverdjohnston/understudy -g`):
 install the tool once for the user. Ask first, because it installs software.
 
 ```bash
-uv tool install "creator-skill[mac] @ git+https://github.com/oliverdjohnston/understudy"
+uv tool install "understudy[mac] @ git+https://github.com/oliverdjohnston/understudy"
 ```
 
 The `[mac]` extra adds the faster Apple Silicon transcription, and does nothing on other
-systems. The command is then `creator-skill`; if the PATH hasn't refreshed yet, use
-`~/.local/bin/creator-skill`. Upgrade later with `uv tool upgrade creator-skill`.
+systems. The command is then `understudy`; if the PATH hasn't refreshed yet, use
+`~/.local/bin/understudy`. Upgrade later with `uv tool upgrade understudy`.
 
 If `uv` itself is missing, install it first (it is a single binary):
 - macOS / Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh` (or `brew install uv`)
@@ -40,7 +40,7 @@ No uv and the user would rather not install it? Inside the repo, plain Python wo
 ## 2. Check it
 
 ```bash
-creator-skill doctor
+understudy doctor
 ```
 
 Fix every `FAIL` with the command it prints, then rerun until it says `All good.` A `WARN` is
@@ -53,7 +53,7 @@ optional: for example, ffmpeg turns on the faster Apple Silicon transcription. I
 |---|---|---|
 | 1 | `creator https://www.tiktok.com/@ana` | Save the creator's handles (several platforms allowed) and check they resolve |
 | 2 | `ingest ana 20` or `ingest ana all` | Transcribe the videos (platform captions first, Whisper otherwise), merge cross-posts, extract notes per video |
-| 3 | `understudy ana both` | Synthesise the notes into one skill: their methods, their voice, or both |
+| 3 | `/understudy ana both` | Synthesise the notes into one skill: their methods, their voice, or both |
 | – | `transcribe <video URLs>` | One-off transcripts |
 
 No account is needed for public TikTok and YouTube profiles. Instagram uses the cookies of a

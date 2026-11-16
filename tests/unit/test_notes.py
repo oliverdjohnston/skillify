@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from creator_skill import dedupe, notes
 from tests.conftest import add_transcript
+from understudy import dedupe, notes
 
 
 def add_video(base, vid, words, date_ts, views=10, platform="tiktok"):

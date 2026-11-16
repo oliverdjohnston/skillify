@@ -25,19 +25,21 @@ agent does the reading and writing.
 Into your agent, without cloning (Claude Code, Codex and others that read skills):
 
 ```bash
-npx skills add oliverdjohnston/understudy
+npx skills add oliverdjohnston/understudy -g
 ```
 
-Then, in any folder, run `/creator https://www.tiktok.com/@theirhandle`. The first time, the
-skill offers to install the `creator-skill` tool with [uv](https://docs.astral.sh/uv/), and
-installs uv too if you don't have it. uv also fetches Python, so there's nothing else to set up.
+`-g` installs the skills for your user, so they work in every folder (leave it off to install into
+the current project only). Then, in any folder, run `/creator https://www.tiktok.com/@theirhandle`.
+The first time, the skill offers to install the `understudy` tool with
+[uv](https://docs.astral.sh/uv/), and installs uv too if you don't have it. uv also fetches Python,
+so there's nothing else to set up.
 
 Or clone it, to change the code or use it without an agent:
 
 ```bash
 git clone https://github.com/oliverdjohnston/understudy.git && cd understudy
 uv venv -p 3.12 .venv && uv pip install -p .venv -e ".[dev,mac]"
-.venv/bin/creator-skill doctor      # prints a fix for anything missing
+.venv/bin/understudy doctor      # prints a fix for anything missing
 ```
 
 No uv? Use `python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"` (Python 3.11 or newer).
@@ -77,9 +79,9 @@ so a big account takes a while, and it picks up where it stopped if you interrup
 ### Without an agent
 
 ```bash
-creator-skill creator add ana --name "Ana Example" --tiktok @ana   # add --youtube @ana etc.
-creator-skill ingest ana --dry-run --limit 3                       # check the handle works
-creator-skill ingest ana                                           # every video; resumable
+understudy creator add ana --name "Ana Example" --tiktok @ana   # add --youtube @ana etc.
+understudy ingest ana --dry-run --limit 3                       # check the handle works
+understudy ingest ana                                           # every video; resumable
 ```
 
 Then ask your agent to run `/ingest ana notes-only` and `/understudy ana`. Understudy asks whether
@@ -100,7 +102,7 @@ Useful options for `ingest`:
 | `--workers N` | videos processed at once (default 4; use 1 if a platform keeps refusing) |
 | `--dry-run` | list what would be processed |
 
-One-off videos: `creator-skill transcribe <url> [<url> ...]`.
+One-off videos: `understudy transcribe <url> [<url> ...]`.
 
 ## Creator profile
 
@@ -137,16 +139,16 @@ creators/<slug>/
     references/sources.md          # every cited video with its links
 ```
 
-Check a generated skill with `creator-skill check <slug> creators/<slug>/skill/<skill-name>`. It
+Check a generated skill with `understudy check <slug> creators/<slug>/skill/<skill-name>`. It
 checks the frontmatter and length, and that every video the skill cites exists.
-`creator-skill stats <slug>` reports how many note quotes match the transcripts word for word.
+`understudy stats <slug>` reports how many note quotes match the transcripts word for word.
 
 `creators/` is git-ignored. The transcripts are other people's content, so keep them to
 yourself and credit the creator when you share a skill.
 
 ## Troubleshooting
 
-- `creator-skill doctor` fails: run the `fix:` command it prints, then run doctor again.
+- `understudy doctor` fails: run the `fix:` command it prints, then run doctor again.
 - "<platform> is refusing requests": you've been rate limited or hit a bot check. Progress is
   saved. Wait an hour and rerun the same command, or add `--cookies-from-browser firefox`. The
   tool doesn't try to get around platform limits.

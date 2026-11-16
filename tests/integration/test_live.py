@@ -2,8 +2,8 @@
 
 import pytest
 
-from creator_skill import ingest
-from creator_skill.models import read_transcript
+from understudy import ingest
+from understudy.models import read_transcript
 
 pytestmark = pytest.mark.live
 SHORT = "https://www.youtube.com/shorts/ai1gIWacf0I"

@@ -1,5 +1,5 @@
 [project]
-name = "creator-skill"
+name = "understudy"
 version = "0.1.0"
 description = "Turn a creator's TikTok, YouTube and Instagram videos into transcripts and a Claude skill"
 readme = "README.md"
@@ -25,7 +25,7 @@ dev = [
 ]
 
 [project.scripts]
-creator-skill = "creator_skill.cli:main"
+understudy = "understudy.cli:main"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]

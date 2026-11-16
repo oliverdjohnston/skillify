@@ -1,1 +1,1 @@
-"""Test suite for creator-skill."""
+"""Test suite for understudy."""

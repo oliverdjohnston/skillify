@@ -2,8 +2,8 @@
 
 import pytest
 
-from creator_skill import ytdlp
-from creator_skill.models import Video
+from understudy import ytdlp
+from understudy.models import Video
 
 YOUTUBE_AUTO_VTT = """WEBVTT
 Kind: captions

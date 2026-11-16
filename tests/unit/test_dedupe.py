@@ -2,8 +2,8 @@
 
 import json
 
-from creator_skill import dedupe
 from tests.conftest import add_transcript
+from understudy import dedupe
 
 SCRIPT = (
     "stop writing hooks that start with hey guys because nobody cares who you are yet "

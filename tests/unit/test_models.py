@@ -1,6 +1,6 @@
 """Transcript file round trip."""
 
-from creator_skill.models import Video, read_transcript, write_transcript
+from understudy.models import Video, read_transcript, write_transcript
 
 
 def test_transcript_round_trip(tmp_path):
