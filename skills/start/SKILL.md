@@ -1,16 +1,16 @@
 ---
 name: start
-description: Install or set up skillify's creator-skill tool (via uv), check it works, and explain how to turn a creator's videos into a skill. Use when someone first uses these skills, asks how they work, or a command fails because creator-skill isn't installed.
+description: Install or set up Understudy's creator-skill tool (via uv), check it works, and explain how to turn a creator's videos into a skill. Use when someone first uses these skills, asks how they work, or a command fails because creator-skill isn't installed.
 ---
 
 # Start
 
-skillify turns everything a creator says on TikTok, YouTube and Instagram into one agent skill
+Understudy turns everything a creator says on TikTok, YouTube and Instagram into one agent skill
 built from their own words. The skills drive a small command-line tool, `creator-skill`.
 
 ## 1. Get the tool
 
-**Inside the skillify repo** (it has `pyproject.toml` and `src/creator_skill/`): make a local
+**Inside the understudy repo** (it has `pyproject.toml` and `src/creator_skill/`): make a local
 environment.
 
 ```bash
@@ -19,11 +19,11 @@ uv venv -p 3.12 .venv && uv pip install -p .venv -e ".[dev,mac]"
 
 The tool is then `.venv/bin/creator-skill` (Windows: `.venv\Scripts\creator-skill.exe`).
 
-**Anywhere else** (the skills were installed with `npx skills add oliverdjohnston/skillify`):
+**Anywhere else** (the skills were installed with `npx skills add oliverdjohnston/understudy`):
 install the tool once for the user. Ask first, because it installs software.
 
 ```bash
-uv tool install "creator-skill[mac] @ git+https://github.com/oliverdjohnston/skillify"
+uv tool install "creator-skill[mac] @ git+https://github.com/oliverdjohnston/understudy"
 ```
 
 The `[mac]` extra adds the faster Apple Silicon transcription, and does nothing on other
@@ -53,7 +53,7 @@ optional: for example, ffmpeg turns on the faster Apple Silicon transcription. I
 |---|---|---|
 | 1 | `creator https://www.tiktok.com/@ana` | Save the creator's handles (several platforms allowed) and check they resolve |
 | 2 | `ingest ana 20` or `ingest ana all` | Transcribe the videos (platform captions first, Whisper otherwise), merge cross-posts, extract notes per video |
-| 3 | `skillify ana both` | Synthesise the notes into one skill: their methods, their voice, or both |
+| 3 | `understudy ana both` | Synthesise the notes into one skill: their methods, their voice, or both |
 | – | `transcribe <video URLs>` | One-off transcripts |
 
 No account is needed for public TikTok and YouTube profiles. Instagram uses the cookies of a

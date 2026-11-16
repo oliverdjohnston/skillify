@@ -1,9 +1,9 @@
 ---
-name: skillify
-description: Turn a creator's whole ingested output into one agent skill built from what they actually say, covering their methods and frameworks, their voice for writing scripts the way they talk, or both. Use when the user wants a skill, playbook or style guide from a creator who has been ingested. Usage: skillify <slug> [knowledge|voice|both] [--enrich] [install to <path>].
+name: understudy
+description: Turn a creator's whole ingested output into one agent skill built from what they actually say, covering their methods and frameworks, their voice for writing scripts the way they talk, or both. Use when the user wants a skill, playbook or style guide from a creator who has been ingested. Usage: understudy <slug> [knowledge|voice|both] [--enrich] [install to <path>].
 ---
 
-# Skillify a creator
+# Build a creator's understudy
 
 Input: a creator slug, optionally with `--enrich`. The result is a standard Agent Skill folder
 (SKILL.md plus references/) that works in any agent that reads skills.
@@ -15,7 +15,7 @@ happens only with `--enrich`, and its results go in separately labelled sections
 
 ## Before you start
 
-Use `.venv/bin/creator-skill` inside the skillify repo, otherwise `creator-skill` on the PATH. If
+Use `.venv/bin/creator-skill` inside the understudy repo, otherwise `creator-skill` on the PATH. If
 neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder.

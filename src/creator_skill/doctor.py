@@ -12,7 +12,7 @@ from yt_dlp.version import __version__ as YT_DLP_VERSION
 from . import transcribe
 
 YT_DLP_MAX_AGE_DAYS = 45  # YouTube/TikTok break old yt-dlp releases within weeks
-TOOL_SPEC = "creator-skill[mac] @ git+https://github.com/oliverdjohnston/skillify"
+TOOL_SPEC = "creator-skill[mac] @ git+https://github.com/oliverdjohnston/understudy"
 IN_UV_TOOL = (Path(sys.prefix) / "uv-receipt.toml").exists()
 
 

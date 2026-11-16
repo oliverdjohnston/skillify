@@ -12,7 +12,7 @@ Two stages, both resumable: rerunning only does what is missing.
 
 ## Before you start
 
-Use `.venv/bin/creator-skill` inside the skillify repo, otherwise `creator-skill` on the PATH. If
+Use `.venv/bin/creator-skill` inside the understudy repo, otherwise `creator-skill` on the PATH. If
 neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder.
@@ -101,4 +101,4 @@ Tell the user:
 - `quotes_verbatim`: if well under 90%, spot-check a few notes for invented quotes
 - the date range covered
 
-Point them to the `skillify` skill next.
+Point them to the `understudy` skill next.

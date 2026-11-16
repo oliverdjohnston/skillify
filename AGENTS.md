@@ -9,9 +9,9 @@ likely you, without memory of this session) can carry on.
 
 ## What it is for
 
-**creator-skill** turns a creator's whole output across TikTok, YouTube (Shorts and long-form)
-and Instagram into one high-quality agent skill, built from what they actually say. The test of
-success: someone using the generated skill gets that creator's real methods and voice, every
+**Understudy** (the `creator-skill` tool plus its agent skills) turns a creator's whole output
+across TikTok, YouTube (Shorts and long-form) and Instagram into one high-quality agent skill,
+built from what they actually say. The test of success: someone using the generated skill gets that creator's real methods and voice, every
 point traceable to a video, with no generic padding.
 
 It is agent-agnostic. Skills use the open SKILL.md format (frontmatter `name` + `description`,
@@ -23,7 +23,7 @@ sub-agents…, otherwise…".
 ```
 creator-skill ingest <slug>        Python: list → captions (or Whisper) → transcripts → dedupe → index.jsonl
 notes (agent, ingest skill)        agent: one structured note per unique video
-skillify (agent, skillify skill)   agent: map-reduce notes → skill/<name>/SKILL.md + references/
+understudy (agent, understudy skill) agent: map-reduce notes → skill/<name>/SKILL.md + references/
 ```
 
 All data for a creator lives in `creators/<slug>/` (git-ignored, because it is other people's
@@ -52,9 +52,9 @@ Code in `src/creator_skill/` (one job per module):
 | `models.py` | `Video`, transcript read/write, atomic writes |
 | `cli.py`, `doctor.py` | the `creator-skill` command and environment check |
 
-Project skills live in `skills/`, the layout `npx skills add oliverdjohnston/skillify` installs
+Project skills live in `skills/`, the layout `npx skills add oliverdjohnston/understudy` installs
 from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks to it: `start`,
-`creator`, `ingest`, `transcribe`, `skillify`.
+`creator`, `ingest`, `transcribe`, `understudy`.
 
 ## Decisions (and why)
 
@@ -64,7 +64,7 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 - **YouTube auto-dubbed videos** have one `*-orig` track per dub language: pick the one in the
   profile's `lang`, and any other only when it is the sole track.
 - **TikTok caption cues are out of order** in the file: `clean_subtitles` sorts them by start time.
-- **Interviews**: notes keep guests' points under `## Guest`, never in Claims; skillify ignores them.
+- **Interviews**: notes keep guests' points under `## Guest`, never in Claims; the understudy step ignores them.
 - **Whisper output in a language other than the profile's `lang` is dropped** (saved with 0
   words). Whisper invents text on music-only clips.
 - **No platform evasion.** No proxies, no user-agent rotation, and no `curl-cffi` impersonation
@@ -76,7 +76,7 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 - **YouTube needs deno + yt-dlp-ejs** (installed with the `yt-dlp[default,deno]` extra) for
   downloads. Captions mostly work without them.
 - **Installed skills find the tool themselves**: the repo's `.venv`, else `creator-skill` on the
-  PATH, else a one-time `uv tool install "creator-skill[mac] @ git+https://github.com/oliverdjohnston/skillify"`.
+  PATH, else a one-time `uv tool install "creator-skill[mac] @ git+https://github.com/oliverdjohnston/understudy"`.
   ffmpeg is optional (only mlx-whisper needs it), so uv is the only prerequisite.
 - **Notes and synthesis are done by the agent, not an API key.** Python stays deterministic and
   cheap. The agent does the judgement.
@@ -102,7 +102,7 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 - Before every commit: `ruff check . && ruff format --check . && pytest` (unit tests only by
   default). `pytest -m live` hits YouTube once; run it when you touch `ytdlp.py` or providers.
 - When you touch the agent skills, run the flow end to end on a small real creator
-  (`ingest --limit 3`), then notes, then skillify, then `creator-skill check`.
+  (`ingest --limit 3`), then notes, then the understudy step, then `creator-skill check`.
 - Keep the code small: standard library first, no speculative options, one test per
   non-trivial branch. A known limitation gets a `# shortcut: <limit>, <when to upgrade>`
   comment.

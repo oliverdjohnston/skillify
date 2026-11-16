@@ -7,7 +7,7 @@ description: Add a creator from their TikTok, YouTube or Instagram handles or pr
 
 ## Before you start
 
-Use `.venv/bin/creator-skill` inside the skillify repo, otherwise `creator-skill` on the PATH. If
+Use `.venv/bin/creator-skill` inside the understudy repo, otherwise `creator-skill` on the PATH. If
 neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder. No account or sign-in is needed for
@@ -56,7 +56,7 @@ Show what was saved, then ask one question:
 > (e.g. 20, good for a quick test)?
 
 If they say yes, continue straight into the `ingest` skill with that choice. When ingest
-finishes, offer the `skillify` skill.
+finishes, offer the `understudy` skill.
 
 ## Instagram
 

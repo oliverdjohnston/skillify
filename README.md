@@ -1,4 +1,4 @@
-# creator-skill
+# Understudy
 
 Turn everything a creator says on TikTok, YouTube (Shorts and long-form) and Instagram into one
 agent skill built from their own words: their methods, their voice, or both. Every point in the
@@ -16,7 +16,7 @@ agent does the reading and writing.
 2. **Notes**: your agent writes structured notes for every unique video: claims, frameworks,
    examples, numbers, tools, hooks and phrasing. Guests' views in interviews are kept apart from
    the creator's.
-3. **Skillify**: your agent groups the notes by topic, ranks advice by how often it comes up and
+3. **Understudy**: your agent groups the notes by topic, ranks advice by how often it comes up and
    how well those videos did, takes the newer view when the creator changed their mind, and
    writes a skill folder you can install.
 
@@ -25,7 +25,7 @@ agent does the reading and writing.
 Into your agent, without cloning (Claude Code, Codex and others that read skills):
 
 ```bash
-npx skills add oliverdjohnston/skillify
+npx skills add oliverdjohnston/understudy
 ```
 
 Then, in any folder, run `/creator https://www.tiktok.com/@theirhandle`. The first time, the
@@ -35,7 +35,7 @@ installs uv too if you don't have it. uv also fetches Python, so there's nothing
 Or clone it, to change the code or use it without an agent:
 
 ```bash
-git clone https://github.com/oliverdjohnston/skillify.git && cd skillify
+git clone https://github.com/oliverdjohnston/understudy.git && cd understudy
 uv venv -p 3.12 .venv && uv pip install -p .venv -e ".[dev,mac]"
 .venv/bin/creator-skill doctor      # prints a fix for anything missing
 ```
@@ -57,7 +57,7 @@ skill, asking only for what it can't work out. Each skill also takes its options
 |---|---|
 | `/creator <TikTok/YouTube/Instagram URLs> "Name"` | add a creator (one person, several platforms) |
 | `/ingest ana 20` · `/ingest ana all` · `/ingest ana since 2026-01-01 tiktok` | transcribe and take notes |
-| `/skillify ana both` · `/skillify ana voice --enrich` | build the skill |
+| `/understudy ana both` · `/understudy ana voice --enrich` | build the skill |
 | `/transcribe <video URLs>` | one-off videos |
 
 Each skill sets up the Python tool itself if needed, so `/start` is optional.
@@ -82,7 +82,7 @@ creator-skill ingest ana --dry-run --limit 3                       # check the h
 creator-skill ingest ana                                           # every video; resumable
 ```
 
-Then ask your agent to run `/ingest ana notes-only` and `/skillify ana`. Skillify asks whether
+Then ask your agent to run `/ingest ana notes-only` and `/understudy ana`. Understudy asks whether
 you want knowledge, voice or both, which topics to include, and where to install the result:
 `~/.claude/skills/` for Claude Code, `~/.agents/skills/` for Codex and other agents that read
 it, or a single project.

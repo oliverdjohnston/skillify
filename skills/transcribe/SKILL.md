@@ -7,7 +7,7 @@ description: Transcribe specific TikTok, YouTube or Instagram video URLs without
 
 ## Before you start
 
-Use `.venv/bin/creator-skill` inside the skillify repo, otherwise `creator-skill` on the PATH. If
+Use `.venv/bin/creator-skill` inside the understudy repo, otherwise `creator-skill` on the PATH. If
 neither exists, set it up with the `start` skill first.
 
 Creator data lives in `creators/` under the current folder.
@@ -32,4 +32,4 @@ Transcripts land in `creators/<slug>/transcripts/<platform>_<id>.md`: frontmatte
 
 Then read each transcript and give the user what they asked for. If they just want a breakdown,
 extract it with `note-template.md` from the `ingest` skill's folder, saved to `creators/<slug>/notes/`. That
-way the video counts if they later run `skillify` on that creator.
+way the video counts if they later run `understudy` on that creator.
