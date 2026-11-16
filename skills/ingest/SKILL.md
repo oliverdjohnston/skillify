@@ -1,6 +1,6 @@
 ---
 name: ingest
-description: 'Transcribe every video a creator has posted on TikTok, YouTube and Instagram, merge cross-posts, and extract structured notes from each one. Use when the user wants to process or update a creator''s whole account, before turning it into a skill. Usage: ingest <slug> [all | N | since YYYY-MM-DD] [tiktok|youtube|instagram] [notes-only].'
+description: 'Transcribe every video a creator has posted on TikTok, YouTube and Instagram, merge cross-posts, and extract structured notes from each one. Use when the user wants to process or update a creator''s whole account, before turning it into a skill. Usage: /ingest <slug> [all | N | since YYYY-MM-DD] [tiktok|youtube|instagram] [notes-only].'
 ---
 
 # Ingest a creator
@@ -39,11 +39,10 @@ else that has a default.
 understudy ingest <slug> [--limit N] [--since YYYY-MM-DD] [--platform NAME]
 ```
 
-- It first lists the whole profile (a few minutes for a 2,000-video account), then handles 4
-  videos at once with a polite pause after each: roughly 1,000 captioned videos
-  an hour, slower when Whisper has to transcribe. For more than about 50 videos, run it in the
-  background or ask the user to run it in their own terminal. If it's interrupted, rerun the
-  same command.
+- It first lists the whole profile (a few minutes for a 2,000-video account), then handles 4 videos
+  at once with a polite pause after each: roughly 1,000 captioned videos an hour, slower when
+  Whisper has to transcribe. For more than about 50 videos, run it in the background or ask the user
+  to run it in their own terminal. If it's interrupted, rerun the same command.
 - Each video prints `caption` (the platform's own captions) or `whisper` (local transcription).
 - **"<platform> is refusing requests"**: progress is saved; follow the advice it prints. Never use
   proxies, rotating user agents or anything else that dodges a platform's limits.
@@ -60,27 +59,28 @@ that lists every URL.
 understudy notes-todo <slug>
 ```
 
-Notes are the expensive step: roughly 100k tokens per batch (about 1,300 per short video). If your agent lets you choose the
-sub-agents' model, a smaller one handles short videos about as well, but in testing it caught
-only a third of the claims in long interviews, so prefer a capable model for long videos. If the creator has many long videos
-(podcasts, streams), say how many batches there are and offer to note only the most-viewed long
-ones: `understudy notes-todo <slug> --long-top 150` keeps every short video plus the 150
-most-viewed videos over 3 minutes.
+Notes are the expensive step: roughly 100k tokens per batch (about 1,300 per short video). If your
+agent lets you choose the sub-agents' model, a smaller one handles short videos about as well, but
+in testing it caught only a third of the claims in long interviews, so prefer a capable model for
+long videos. If the creator has many long videos (podcasts, streams), say how many batches there are
+and offer to note only the most-viewed long ones: `understudy notes-todo <slug> --long-top 150`
+keeps every short video plus the 150 most-viewed videos over 3 minutes.
 
-This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete
-note yet, packed so each batch is at most 75 videos or 30k transcript words. Bigger batches are
-much cheaper per note, because each sub-agent's fixed overhead is shared. Videos under 20 words are skipped.
+This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete note
+yet, packed so each batch is at most 75 videos or 30k transcript words. Bigger batches are much
+cheaper per note, because each sub-agent's fixed overhead is shared. Videos under 20 words are
+skipped.
 
 For each batch, give this task to a sub-agent if you can run them, at most 4 in parallel. If you
 can't, work through the batches yourself one at a time.
 
-> Read `<absolute path of note-template.md in this skill's folder>` and follow it exactly. For each key in
-> `<batch>`, read `creators/<slug>/transcripts/<key>.md` and write
+> Read `<absolute path of note-template.md in this skill's folder>` and follow it exactly. For each
+> key in `<batch>`, read `creators/<slug>/transcripts/<key>.md` and write
 > `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse one where it fits; otherwise make a
 > new kebab-case tag; never leave a video with speech untagged):
-> `<output of: understudy topics <slug>>`. Write each note yourself (scripts only to check
-> quotes), and keep any helper files in your own new folder. Read nothing else. Reply only with the keys you
-> wrote and any you skipped, with the reason.
+> `<output of: understudy topics <slug>>`. Write each note yourself (scripts only to check quotes),
+> and keep any helper files in your own new folder. Read nothing else. Reply only with the keys you wrote and any you skipped,
+> with the reason.
 
 When a round finishes, run `notes-todo` again and repeat until `remaining` is 0. A note without
 its `## Claims` section counts as unfinished and is redone.

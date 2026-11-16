@@ -1,6 +1,6 @@
 ---
 name: transcribe
-description: 'Transcribe specific TikTok, YouTube or Instagram video URLs without processing a whole account. Use when the user pastes one or more video links and wants the transcript or a quick breakdown. Usage: transcribe <video URL> [more URLs] [for <slug>].'
+description: 'Transcribe specific TikTok, YouTube or Instagram video URLs without processing a whole account. Use when the user pastes one or more video links and wants the transcript or a quick breakdown. Usage: /transcribe <video URL> [more URLs] [for <slug>].'
 ---
 
 # Transcribe specific videos
@@ -31,5 +31,6 @@ Transcripts land in `creators/<slug>/transcripts/<platform>_<id>.md`: frontmatte
 (URL, date, views, `source: caption|whisper`) followed by the text.
 
 Then read each transcript and give the user what they asked for. If they just want a breakdown,
-extract it with `note-template.md` from the `ingest` skill's folder, saved to `creators/<slug>/notes/`. That
-way the video counts if they later run the `understudy` skill on that creator.
+extract it with `note-template.md` from the `ingest` skill's folder, saved to
+`creators/<slug>/notes/`. That way the video counts if they later run the `understudy` skill on that
+creator.

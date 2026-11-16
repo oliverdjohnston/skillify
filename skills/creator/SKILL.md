@@ -1,6 +1,6 @@
 ---
 name: creator
-description: 'Add a creator from their TikTok, YouTube or Instagram handles or profile links, check the accounts resolve, then offer to transcribe them and build their skill. Also lists and edits creators. Use when the user gives a creator''s handle or profile URL, or asks to add, change or list creators. Usage: creator <profile URL or @handle> [more URLs] ["Display Name"], creator list, creator edit <slug> ...'
+description: 'Add a creator from their TikTok, YouTube or Instagram handles or profile links, check the accounts resolve, then offer to transcribe them and build their skill. Also lists and edits creators. Use when the user gives a creator''s handle or profile URL, or asks to add, change or list creators. Usage: /creator <profile URL or @handle> [more URLs] ["Display Name"], /creator list, /creator edit <slug> ...'
 ---
 
 # Creator
@@ -61,11 +61,11 @@ finishes, offer the `understudy` skill.
 ## Instagram
 
 yt-dlp can't list Instagram profiles at the moment, so Reels come from a URL list. Save the
-Instagram handle in the profile as usual (ingest only runs platforms the profile names), and ask
-the user to paste Reel links into `creators/<slug>/instagram_urls.txt`, one per line. A handful is enough;
-most Reels are cross-posts of TikToks or Shorts anyway. Instagram does need a sign-in: ingest
-with `--cookies-from-browser firefox` (or chrome/safari) while the user is logged in to Instagram
-in that browser. It uses their own session; nothing is stored here.
+Instagram handle in the profile as usual (ingest only runs platforms the profile names), and ask the
+user to paste Reel links into `creators/<slug>/instagram_urls.txt`, one per line. A handful is
+enough; most Reels are cross-posts of TikToks or Shorts anyway. Instagram does need a sign-in:
+ingest with `--cookies-from-browser firefox` (or chrome/safari) while the user is logged in to
+Instagram in that browser. It uses their own session; nothing is stored here.
 
 ## List
 

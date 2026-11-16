@@ -51,11 +51,11 @@ optional: for example, ffmpeg turns on the faster Apple Silicon transcription. I
 
 | Step | Example | What happens |
 |---|---|---|
-| 1 | `creator https://www.tiktok.com/@ana` | Save the creator's handles (several platforms allowed) and check they resolve |
-| 2 | `ingest ana 20` or `ingest ana all` | Transcribe the videos (platform captions first, Whisper otherwise), merge cross-posts, extract notes per video |
+| 1 | `/creator https://www.tiktok.com/@ana` | Save the creator's handles (several platforms allowed) and check they resolve |
+| 2 | `/ingest ana 20` or `/ingest ana all` | Transcribe the videos (platform captions first, Whisper otherwise), merge cross-posts, extract notes per video |
 | 3 | `/understudy ana both` | Synthesise the notes into one skill: their methods, their voice, or both |
-| – | `transcribe <video URLs>` | One-off transcripts |
+| – | `/transcribe <video URLs>` | One-off transcripts |
 
 No account is needed for public TikTok and YouTube profiles. Instagram uses the cookies of a
 browser where the user is logged in. Everything for a creator lives in `creators/<slug>/` under
-the current folder. Step 1 leads into steps 2 and 3, so the user can just start with `creator`.
+the current folder. Step 1 leads into steps 2 and 3, so the user can just start with `/creator`.
