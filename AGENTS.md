@@ -11,8 +11,8 @@ likely you, without memory of this session) can carry on.
 
 **Understudy** (the `creator-skill` tool plus its agent skills) turns a creator's whole output
 across TikTok, YouTube (Shorts and long-form) and Instagram into one high-quality agent skill,
-built from what they actually say. The test of success: someone using the generated skill gets that creator's real methods and voice, every
-point traceable to a video, with no generic padding.
+built from what they actually say. The test of success: someone using the generated skill gets
+that creator's real methods and voice, every point traceable to a video, with no generic padding.
 
 It is agent-agnostic. Skills use the open SKILL.md format (frontmatter `name` + `description`,
 optional `references/`). Never depend on one vendor's tools in a skill: write "if you can run
