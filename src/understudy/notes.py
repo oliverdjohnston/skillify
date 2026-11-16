@@ -54,7 +54,8 @@ def todo(
 ) -> dict:
     """Batches of canonical video keys that still need a complete note, packed by word count.
 
-    `long_top` keeps only the N most-viewed videos over LONG_SECONDS; short ones are all kept.
+    Videos over LONG_SECONDS get their own batches under "long", so the agent can give short ones
+    to a cheaper model. `long_top` keeps only the N most-viewed long videos.
     """
     notes = _notes(base, with_content=False)
     index = load_index(base)
@@ -70,9 +71,18 @@ def todo(
         and e["key"] not in skip
         and not notes.get(e["key"], {}).get("_complete")
     ]
-    # first-fit, biggest first: long videos otherwise leave many near-empty batches
+    is_long = {e["key"] for e in long}
+    return {
+        "remaining": len(pending),
+        "short": _pack([e for e in pending if e["key"] not in is_long], max_words, max_items),
+        "long": _pack([e for e in pending if e["key"] in is_long], max_words, max_items),
+    }
+
+
+def _pack(entries: list[dict], max_words: int, max_items: int) -> list[list[str]]:
+    """First-fit, biggest first: big transcripts otherwise leave many near-empty batches."""
     batches: list[dict] = []
-    for entry in sorted(pending, key=lambda e: -e["words"]):
+    for entry in sorted(entries, key=lambda e: -e["words"]):
         for batch in batches:
             if len(batch["keys"]) < max_items and batch["words"] + entry["words"] <= max_words:
                 batch["keys"].append(entry["key"])
@@ -80,7 +90,7 @@ def todo(
                 break
         else:
             batches.append({"keys": [entry["key"]], "words": entry["words"]})
-    return {"remaining": len(pending), "batches": [b["keys"] for b in batches]}
+    return [b["keys"] for b in batches]
 
 
 def topics(base: Path) -> list[dict]:

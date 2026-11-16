@@ -38,21 +38,23 @@ def test_todo_packs_by_words_and_skips_short_and_done(base):
     add_note(base, "tiktok_b", ["hooks"], complete=False)  # half-written: redo
     assert notes.todo(base, max_words=1000) == {
         "remaining": 2,
-        "batches": [["tiktok_c"], ["tiktok_b"]],  # biggest first; 900 + 400 > 1000
+        "short": [["tiktok_c"], ["tiktok_b"]],  # biggest first; 900 + 400 > 1000
+        "long": [],
     }
-    assert notes.todo(base, max_words=10_000, max_items=1)["batches"] == [
+    assert notes.todo(base, max_words=10_000, max_items=1)["short"] == [
         ["tiktok_c"],
         ["tiktok_b"],
     ]
-    assert notes.todo(base)["batches"] == [["tiktok_c", "tiktok_b"]]
+    assert notes.todo(base)["short"] == [["tiktok_c", "tiktok_b"]]
 
 
 def test_todo_long_top_keeps_most_viewed_long_videos(tmp_path):
     for vid, seconds, views in [("s", 40, 1), ("l1", 1800, 50), ("l2", 1800, 900), ("l3", 600, 10)]:
         add_transcript(tmp_path, "youtube", vid, f"{vid} " * 100, duration=seconds, views=views)
     dedupe.rebuild(tmp_path)
-    keys = sum(notes.todo(tmp_path, long_top=1)["batches"], [])
-    assert sorted(keys) == ["youtube_l2", "youtube_s"]
+    todo = notes.todo(tmp_path, long_top=1)
+    assert todo["short"] == [["youtube_s"]]
+    assert todo["long"] == [["youtube_l2"]]  # kept apart from short videos, even if they'd fit
 
 
 def test_topics_rank_non_promo_recurrence_then_views(base):
@@ -131,7 +133,7 @@ def test_check_skill_reports_problems(base, tmp_path):
 
 def test_none_notes_are_complete_but_add_no_topics(base):
     add_note(base, "tiktok_a", ["background-music"], content_type="none")
-    assert "tiktok_a" not in sum(notes.todo(base)["batches"], [])
+    assert "tiktok_a" not in sum(notes.todo(base)["short"], [])
     assert notes.topics(base) == []
     assert notes.stats(base)["no_content"] == 1
 
@@ -141,5 +143,5 @@ def test_todo_fills_batches_around_long_videos(tmp_path):
         text = " ".join(f"v{i}w{j}" for j in range(words))  # distinct, so dedupe keeps all
         add_transcript(tmp_path, "youtube", f"v{i}", text, timestamp=1_700_000_000 + i)
     dedupe.rebuild(tmp_path)
-    batches = notes.todo(tmp_path, max_words=1000)["batches"]
+    batches = notes.todo(tmp_path, max_words=1000)["short"]
     assert len(batches) == 3 and all(len(b) == 2 for b in batches)  # not 1+1+1+1+1+1

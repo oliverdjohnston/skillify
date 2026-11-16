@@ -59,17 +59,26 @@ that lists every URL.
 understudy notes-todo <slug>
 ```
 
-Notes are the expensive step: roughly 100k tokens per batch (about 1,300 per short video). If your
-agent lets you choose the sub-agents' model, a smaller one handles short videos about as well, but
-in testing it caught only a third of the claims in long interviews, so prefer a capable model for
-long videos. If the creator has many long videos (podcasts, streams), say how many batches there are
-and offer to note only the most-viewed long ones: `understudy notes-todo <slug> --long-top 150`
-keeps every short video plus the 150 most-viewed videos over 3 minutes.
-
-This prints `{"remaining": N, "batches": [[key, ...], ...]}`: unique videos with no complete note
-yet, packed so each batch is at most 75 videos or 30k transcript words. Bigger batches are much
-cheaper per note, because each sub-agent's fixed overhead is shared. Videos under 20 words are
+This prints `{"remaining": N, "short": [[key, ...], ...], "long": [[key, ...], ...]}`: unique
+videos with no complete note yet, packed so each batch is at most 75 videos or 30k transcript
+words. Videos over 3 minutes go in `long` batches, never mixed with short ones. Bigger batches are
+much cheaper per note, because each sub-agent's fixed overhead is shared. Videos under 20 words are
 skipped.
+
+Notes are the expensive step: roughly 100k tokens per batch (about 1,300 per short video). Pick the
+model per batch if your agent lets you choose a sub-agent's model:
+
+- **`short` batches: a small, cheap model** (e.g. Claude Haiku). In testing it matched a larger
+  model on short videos (93% vs 97% of quotes verbatim). A claim it misses in one short video
+  usually recurs in others, and the skill ranks advice by recurrence anyway.
+- **`long` batches: a capable model** (e.g. Claude Sonnet or better). The small model caught only
+  about a third of the claims in long interviews, and a long video's methods often appear nowhere
+  else.
+
+If you can't choose, use your own model for both. If the creator has many long videos (podcasts,
+streams), say how many `long` batches there are and offer to note only the most-viewed ones:
+`understudy notes-todo <slug> --long-top 150` keeps every short video plus the 150 most-viewed
+videos over 3 minutes.
 
 For each batch, give this task to a sub-agent if you can run them, at most 4 in parallel. If you
 can't, work through the batches yourself one at a time.
@@ -79,8 +88,8 @@ can't, work through the batches yourself one at a time.
 > `creators/<slug>/notes/<key>.md`. Existing topic tags (reuse one where it fits; otherwise make a
 > new kebab-case tag; never leave a video with speech untagged):
 > `<output of: understudy topics <slug>>`. Write each note yourself (scripts only to check quotes),
-> and keep any helper files in your own new folder. Read nothing else. Reply only with the keys you wrote and any you skipped,
-> with the reason.
+> and keep any helper files in your own new folder. Read nothing else. Reply only with the keys you
+> wrote and any you skipped, with the reason.
 
 When a round finishes, run `notes-todo` again and repeat until `remaining` is 0. A note without
 its `## Claims` section counts as unfinished and is redone.

@@ -82,6 +82,9 @@ from. `.agents/skills` (Codex) and `.claude/skills` (Claude Code) are symlinks t
 - **Skill descriptions are single-quoted in the frontmatter.** The skills CLI parses strict YAML
   and silently skips a skill whose unquoted description contains `: ` (e.g. `Usage:`).
   `tests/unit/test_skills.py` guards it.
+- **`notes-todo` keeps short and long videos in separate batches** (over 3 minutes is long), so
+  the agent can give short ones to a cheap model. A smaller model matched a larger one on short
+  videos (93% vs 97% verbatim quotes) but caught about a third of the claims in long interviews.
 - **Notes and synthesis are done by the agent, not an API key.** Python stays deterministic and
   cheap. The agent does the judgement.
 - **Faithfulness over helpfulness** in notes and skills. Web research only with `--enrich`, and
